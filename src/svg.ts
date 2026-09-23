@@ -25,9 +25,8 @@ const textWithDot = (
   x: number,
   baseline: number,
   colors: { text: string; dot: string },
-  tracking = 0,
 ): Drawn => {
-  const run: TextRun = layoutText(text, { weight: 800, size, x, baseline, tracking });
+  const run: TextRun = layoutText(text, { weight: 800, size, x, baseline });
   const r = DOT_RADIUS * size;
   const cx = run.end + DOT_GAP * size;
   const cy = baseline - r;
@@ -69,8 +68,12 @@ export type WordmarkOptions = {
  */
 export const wordmarkSvg = (product: Product, options: WordmarkOptions = {}): string => {
   const colors = palette(product.hue);
-  const text = options.background === "light" ? colors.b6 : colors.c1;
-  const drawn = textWithDot(product.name, 1000, 0, 1000, { text, dot: colors.h1 });
+  // On white, h1 is too pale for the dot (sheets' green is 1.3:1); the deeper h2 carries it.
+  const scheme =
+    options.background === "light"
+      ? { text: colors.b6, dot: colors.h2 }
+      : { text: colors.c1, dot: colors.h1 };
+  const drawn = textWithDot(product.name, 1000, 0, 1000, scheme);
   const pad = 40;
   const { x1, y1, x2, y2 } = drawn.ink;
   const viewBox = [x1 - pad, y1 - pad, x2 - x1 + 2 * pad, y2 - y1 + 2 * pad].map(num).join(" ");
@@ -84,8 +87,7 @@ export type IconOptions = {
 
 /**
  * The icon's canvas and its letters' font size. Every product uses the same size, so the icons
- * match as a family whatever the letters; the x-height is centered vertically (ascenders and
- * descenders hang out evenly) and the ink horizontally.
+ * match as a family whatever the letters; the ink is centered both ways.
  */
 const ICON_SIZE = 64;
 const ICON_FONT_SIZE = 32;
@@ -99,10 +101,9 @@ const ICON_FONT_SIZE = 32;
 export const iconSvg = (product: Product, options: IconOptions = {}): string => {
   const colors = palette(product.hue);
   const scheme = { text: colors.c1, dot: colors.h1 };
-  const xHeight = -layoutText("x", { weight: 800, size: ICON_FONT_SIZE }).ink.y1;
   const probe = textWithDot(product.mark, ICON_FONT_SIZE, 0, 0, scheme).ink;
   const x = ICON_SIZE / 2 - (probe.x1 + probe.x2) / 2;
-  const baseline = ICON_SIZE / 2 + xHeight / 2;
+  const baseline = ICON_SIZE / 2 - (probe.y1 + probe.y2) / 2;
   const drawn = textWithDot(product.mark, ICON_FONT_SIZE, x, baseline, scheme);
   const radius = options.shape === "square" ? "" : ` rx="14"`;
   const background = `<rect width="${ICON_SIZE}" height="${ICON_SIZE}"${radius} fill="${colors.b6}"/>`;
@@ -130,14 +131,10 @@ export const ogSvg = (product: Product): string => {
   const taglineBaseline = titleLine.bottom + OG.gap - taglineLine.top;
   const blockHeight = taglineBaseline + taglineLine.bottom - titleLine.top;
   const titleBaseline = (OG.height - blockHeight) / 2 - titleLine.top;
-  const title = textWithDot(
-    product.name,
-    OG.title,
-    OG.padding,
-    titleBaseline,
-    { text: colors.c1, dot: colors.h1 },
-    -4 / OG.title,
-  );
+  const title = textWithDot(product.name, OG.title, OG.padding, titleBaseline, {
+    text: colors.c1,
+    dot: colors.h1,
+  });
   const tagline = layoutText(product.tagline, {
     weight: 400,
     size: OG.tagline,

@@ -9,9 +9,10 @@
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { brandFiles, PRODUCTS } from "../dist/index.js";
 
 const files = brandFiles(PRODUCTS.pools);
@@ -21,7 +22,9 @@ assert.ok(String(files[0].contents).startsWith("<svg "), "wordmark is an SVG");
 const root = mkdtempSync(path.join(tmpdir(), "brand-smoke-"));
 try {
   const bin = new URL("../dist/cli.js", import.meta.url);
-  const output = execFileSync(process.execPath, [bin.pathname, "sheets", "--root", root], {
+  // An app with src/app, so the run also exercises app directory detection.
+  mkdirSync(path.join(root, "src/app"), { recursive: true });
+  const output = execFileSync(process.execPath, [fileURLToPath(bin), "sheets", "--root", root], {
     encoding: "utf8",
   });
   assert.equal(output.trim().split("\n").length, 8);

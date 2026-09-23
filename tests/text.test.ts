@@ -45,13 +45,36 @@ describe("layoutText", () => {
     expect(moved.line.top - base.line.top).toBeCloseTo(20, 5);
   });
 
-  it("measures curves to their extremes, not their control points", () => {
-    // "o" is all curves; its ink sits inside the control-point hull.
-    const { ink } = layoutText("o", bold);
-    const points = [...layoutText("o", bold).d.matchAll(/-?[\d.]+/g)].map(Number);
-    const ys = points.filter((_, index) => index % 2 === 1);
-    expect(ink.y1).toBeGreaterThanOrEqual(Math.min(...ys) - 0.01);
-    expect(ink.y2).toBeLessThanOrEqual(Math.max(...ys) + 0.01);
+  it.each(["o", "packs", "Qgjy@"])("measures %j's ink exactly (against sampled curves)", (text) => {
+    const { d, ink } = layoutText(text, bold);
+    // Walk the path, sampling each quadratic finely, and take the box of every sample.
+    const box = { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity };
+    const add = (x: number, y: number) => {
+      box.x1 = Math.min(box.x1, x);
+      box.y1 = Math.min(box.y1, y);
+      box.x2 = Math.max(box.x2, x);
+      box.y2 = Math.max(box.y2, y);
+    };
+    let at = [0, 0];
+    for (const [, type, args = ""] of d.matchAll(/([MLQZ])([^MLQZ]*)/g)) {
+      const n = args.trim().split(" ").filter(Boolean).map(Number);
+      if (type === "Q") {
+        const [cx = 0, cy = 0, x = 0, y = 0] = n;
+        for (let step = 0; step <= 200; step += 1) {
+          const t = step / 200;
+          add(
+            (1 - t) ** 2 * (at[0] ?? 0) + 2 * (1 - t) * t * cx + t * t * x,
+            (1 - t) ** 2 * (at[1] ?? 0) + 2 * (1 - t) * t * cy + t * t * y,
+          );
+        }
+        at = [x, y];
+      } else if (type !== "Z") {
+        at = [n[0] ?? 0, n[1] ?? 0];
+        add(at[0] ?? 0, at[1] ?? 0);
+      }
+    }
+    // Path data is rounded to 0.01, so allow that much.
+    for (const key of ["x1", "y1", "x2", "y2"] as const) expect(ink[key]).toBeCloseTo(box[key], 1);
   });
 
   it("gives an empty run a zero-size box at the pen", () => {
@@ -65,6 +88,29 @@ describe("layoutText", () => {
 
   it("refuses characters the bundled fonts don't have", () => {
     expect(() => layoutText("café", bold)).toThrow('No glyph for "é"');
+  });
+
+  it("names the right character even after a ligature (fi)", () => {
+    expect(() => layoutText("fi é", bold)).toThrow('No glyph for "é"');
+    expect(() => layoutText("fié", bold)).toThrow('No glyph for "é"');
+  });
+
+  it.each(["\u00a0", "\t", "\u2009", "\u3000"])(
+    "refuses whitespace other than a space: %j",
+    (space) => {
+      expect(() => layoutText(`a${space}b`, bold)).toThrow("No glyph for");
+    },
+  );
+
+  it("writes no zero-length segments", () => {
+    const { d } = layoutText("packs", bold);
+    const commands = [...d.matchAll(/([MLQCZ])([^MLQCZ]*)/g)];
+    let current = "";
+    for (const [, type, args = ""] of commands) {
+      const point = args.trim().split(" ").slice(-2).join(" ");
+      if (type === "L") expect(point).not.toBe(current);
+      if (type !== "Z") current = point;
+    }
   });
 });
 

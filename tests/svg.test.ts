@@ -42,8 +42,10 @@ describe("wordmarkSvg", () => {
     const dark = wordmarkSvg(PRODUCTS.pools);
     const light = wordmarkSvg(PRODUCTS.pools, { background: "light" });
     expect(dark).toContain(`<path fill="${colors.c1}"`);
+    expect(dark).toContain(`fill="${colors.h1}"/>`);
+    // h1 is too pale on white (sheets' green is 1.3:1); the deeper h2 carries the dot there.
     expect(light).toContain(`<path fill="${colors.b6}"`);
-    for (const svg of [dark, light]) expect(svg).toContain(`fill="${colors.h1}"/>`);
+    expect(light).toContain(`fill="${colors.h2}"/>`);
   });
 
   it("is labelled and cropped to its ink with a margin", () => {
@@ -80,6 +82,7 @@ describe("iconSvg", () => {
       expect(Math.max(...ys)).toBeLessThan(58);
       // Control points can sit just outside the ink, so allow a little slack.
       expect((Math.min(...xs) + Math.max(...xs)) / 2).toBeCloseTo(32, 0);
+      expect((Math.min(...ys) + Math.max(...ys)) / 2).toBeCloseTo(32, 0);
     },
   );
 
@@ -102,6 +105,17 @@ describe("ogSvg", () => {
     expect(svg).toContain(`fill="${palette(200).b6}"`);
   });
 
+  it("draws the title like the wordmark (no extra tracking)", () => {
+    const title = ogSvg(PRODUCTS.packs).match(/<path fill="[^"]+" d="([^"]+)"/)?.[1] ?? "";
+    const letters = [...title.matchAll(/M/g)].length;
+    const wordmark = wordmarkSvg(PRODUCTS.packs).match(/ d="([^"]+)"/)?.[1] ?? "";
+    expect(letters).toBe([...wordmark.matchAll(/M/g)].length);
+    // Same shapes at 150/1000 scale: the dot's gap from the text scales with it.
+    const dotX = (svg: string) => Number(/<circle cx="([\d.]+)"/.exec(svg)?.[1]);
+    const wordmarkGap = dotX(wordmarkSvg(PRODUCTS.packs)) * 0.15 + 96;
+    expect(dotX(ogSvg(PRODUCTS.packs))).toBeCloseTo(wordmarkGap, 0);
+  });
+
   it("keeps everything inside the image", () => {
     for (const product of products) {
       for (const [px, py] of inkPoints(ogSvg(product))) {
@@ -112,6 +126,21 @@ describe("ogSvg", () => {
       }
     }
   });
+});
+
+describe("snapshots", () => {
+  // Any visual change shows up here as a diff to review (and a dependency bump can't drift).
+  it.each(products.map((product) => [product.name, product] as const))(
+    "%s",
+    async (name, product) => {
+      await expect(wordmarkSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-wordmark.svg`);
+      await expect(wordmarkSvg(product, { background: "light" })).toMatchFileSnapshot(
+        `__snapshots__/${name}-wordmark-dark.svg`,
+      );
+      await expect(iconSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-icon.svg`);
+      await expect(ogSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-og.svg`);
+    },
+  );
 });
 
 describe("escapeXml", () => {

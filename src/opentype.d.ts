@@ -24,6 +24,7 @@ declare module "opentype.js" {
     unitsPerEm: number;
     ascender: number;
     descender: number;
+    hasChar(char: string): boolean;
     stringToGlyphs(text: string): Glyph[];
     getKerningValue(left: Glyph, right: Glyph): number;
   }

@@ -8,7 +8,13 @@
  * @modified Wed Sep 23, 2026
  */
 
-export { type BrandFile, type BrandFileOptions, brandFiles, writeBrandFiles } from "./generate.js";
+export {
+  type BrandFile,
+  type BrandFileOptions,
+  brandFiles,
+  metadataConflicts,
+  writeBrandFiles,
+} from "./generate.js";
 export { hslToHex, type Palette, palette, TOKENS, type Token } from "./palette.js";
 export { svgToPng } from "./png.js";
 export { previewHtml } from "./preview.js";

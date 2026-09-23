@@ -9,17 +9,20 @@
  * @modified Wed Sep 23, 2026
  */
 
-import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { brandFiles, writeBrandFiles } from "./generate.js";
+import { brandFiles, metadataConflicts, writeBrandFiles } from "./generate.js";
 import { previewHtml } from "./preview.js";
 import { isProductKey, PRODUCTS } from "./products.js";
 
 export const USAGE = `Usage:
-  haruhime-brand <product> [--root <dir>] [--public <dir>] [--app <dir>] [--dry-run]
-      Write the product's brand files into an app (defaults: --root . --public public --app src/app).
+  haruhime-brand <product> [--root <dir>] [--public <dir>] [--app <dir>] [--dry-run] [--force]
+      Write the product's brand files into a Next.js app. Defaults: --root . --public public,
+      --app src/app or app (whichever exists). Refuses when the app directory already has
+      icon/apple-icon/opengraph-image files it wouldn't replace (Next would serve both), unless
+      --force.
   haruhime-brand preview [--out <dir>]
       Write <dir>/index.html (default: preview) showing every product.
   haruhime-brand list
@@ -69,17 +72,47 @@ export const run = (args: readonly string[], io: Io): number => {
     io.err(`Unknown product "${command}". Products: ${Object.keys(PRODUCTS).join(", ")}.`);
     return 1;
   }
-  const files = brandFiles(PRODUCTS[command], {
-    ...(values.public ? { publicDir: values.public } : {}),
-    ...(values.app ? { appDir: values.app } : {}),
-  });
   const root = path.resolve(io.cwd, values.root ?? ".");
+  const appDir = values.app ?? findAppDir(root);
+  if (!appDir) {
+    io.err(
+      `No app directory: neither ${path.join(root, "src/app")} nor ${path.join(root, "app")} exists. Pass --app <dir>.`,
+    );
+    return 1;
+  }
+  const files = brandFiles(PRODUCTS[command], {
+    appDir,
+    ...(values.public ? { publicDir: values.public } : {}),
+  });
+  const conflicts = metadataConflicts(root, appDir, files);
+  if (conflicts.length > 0 && !values.force) {
+    io.err(
+      [
+        "These files would make Next.js serve two icons or link previews:",
+        ...conflicts.map((file) => `  ${file}`),
+        "Delete them (the generated files replace them), or pass --force to write anyway.",
+      ].join("\n"),
+    );
+    return 1;
+  }
+  const targets = files.map((file) => path.join(root, file.path));
   if (values["dry-run"]) {
-    for (const file of files) io.out(path.join(root, file.path));
+    for (const target of targets) io.out(existsSync(target) ? `${target} (exists)` : target);
     return 0;
   }
-  for (const written of writeBrandFiles(files, root)) io.out(`wrote ${written}`);
+  const existed = new Set(targets.filter((target) => existsSync(target)));
+  for (const written of writeBrandFiles(files, root)) {
+    io.out(`${existed.has(written) ? "replaced" : "wrote"} ${written}`);
+  }
   return 0;
+};
+
+// Next.js looks for src/app first, then app.
+const findAppDir = (root: string): string | null => {
+  for (const candidate of ["src/app", "app"]) {
+    if (existsSync(path.join(root, candidate))) return candidate;
+  }
+  return null;
 };
 
 const parse = (args: readonly string[]) =>
@@ -92,6 +125,7 @@ const parse = (args: readonly string[]) =>
       app: { type: "string" },
       out: { type: "string" },
       "dry-run": { type: "boolean" },
+      force: { type: "boolean" },
       help: { type: "boolean", short: "h" },
     },
   });

@@ -9,7 +9,7 @@ The brand kit for the haruhime.moe osu! tools (packs, pools, sheets), generated 
 | sheets | `sh.` | 150 (green) |
 
 - **Palette from one hue:** six backgrounds, four text colors and two highlights, the same recipe as packs.haruhime.moe. An app sets `--hue` and its CSS does the rest.
-- **Wordmark:** the name in Nunito ExtraBold plus a dot in the highlight color, outlined to SVG paths.
+- **Wordmark:** the name in Nunito ExtraBold plus a dot in the highlight color (the deeper `h2` on light backgrounds, where `h1` is too pale), outlined to SVG paths.
 - **Icon:** the two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.
 - **Link preview:** a 1200×630 image with the wordmark over the tagline.
 
@@ -24,7 +24,7 @@ bunx haruhime-brand preview        # writes preview/index.html showing every pro
 bunx haruhime-brand list
 ```
 
-`haruhime-brand <product>` writes:
+`haruhime-brand <product>` writes these (paths shown for an app with `src/app`; it uses `app/` when that's what the app has):
 
 | File | For |
 | --- | --- |
@@ -36,9 +36,15 @@ bunx haruhime-brand list
 | `src/app/apple-icon.png` | 180×180, square corners (iOS rounds them) |
 | `src/app/opengraph-image.png` + `.alt.txt` | the link preview and its alt text |
 
-Options: `--root <dir>` (the app, default `.`), `--public <dir>` (default `public`), `--app <dir>` (default `src/app`), `--dry-run` (print paths only).
+Options: `--root <dir>` (the app, default `.`), `--public <dir>` (default `public`), `--app <dir>` (default: `src/app`, else `app`; it stops if neither exists), `--dry-run` (print the paths, marking ones that exist), `--force` (see below).
 
-Rerun it after upgrading this package and commit the changes.
+Rerun it after upgrading this package and commit the changes. It says which files it `wrote` and which it `replaced`.
+
+### Moving an app over
+
+If the app directory already makes an icon or link preview another way (`apple-icon.tsx`, `opengraph-image.tsx`, `icon.png`, `twitter-image.jpg`, …), Next.js would serve both, so the CLI stops and lists them. Delete them, since the generated files replace them, then run it again. `--force` writes anyway.
+
+`haruhime-brand preview` writes `preview/` where you run it. Run it from this repo, or add `preview/` to the app's `.gitignore`.
 
 ## API
 
@@ -56,14 +62,16 @@ wordmarkSvg(PRODUCTS.pools, { background: "light" }); // an SVG string
 | `wordmarkSvg`, `iconSvg`, `ogSvg` | The drawings as SVG strings. |
 | `svgToPng(svg, width)` | PNG bytes, via resvg. |
 | `brandFiles`, `writeBrandFiles` | What the CLI writes, as data, and the writer. |
+| `metadataConflicts` | Icon and preview files already in an app directory that the brand files wouldn't replace. |
+| `escapeXml` | Escapes text for SVG or HTML. |
 | `previewHtml(products)` | The preview page. |
 | `layoutText` | Nunito text as SVG path data with kerning, plus its exact ink box. |
 
-`layoutText` draws with the bundled fonts, which are subset to printable ASCII. Anything else throws, rather than drawing a blank box.
+`layoutText` draws with the bundled fonts, which are subset to printable ASCII. Any other character, including tabs and non-breaking spaces, throws rather than drawing a blank box.
 
 ## Adding a product
 
-Add an entry to `PRODUCTS` in `src/products.ts` with a name, a two-letter mark, a hue and a tagline. Run `bun run preview` to see it next to the others, then release a minor version.
+Add an entry to `PRODUCTS` in `src/products.ts` with a name, a two-letter mark, a hue and a tagline. Run `bun run preview` to see it next to the others. Review and accept the new snapshots in `tests/__snapshots__/` (`bun run test -u`), then release a minor version.
 
 ## License
 

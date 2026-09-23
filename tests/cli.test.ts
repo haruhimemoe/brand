@@ -6,7 +6,7 @@
  * @modified Wed Sep 23, 2026
  */
 
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -35,11 +35,61 @@ describe("haruhime-brand", () => {
     ]);
   });
 
+  const app = (dir = "src/app") => mkdirSync(path.join(cwd, dir), { recursive: true });
+  const touch = (file: string) => {
+    mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
+    writeFileSync(path.join(cwd, file), "old");
+  };
+
   it("writes a product's files into the app", () => {
+    app();
     expect(cli("pools")).toBe(0);
     expect(out).toHaveLength(8);
     expect(existsSync(path.join(cwd, "public/brand/pools-wordmark.svg"))).toBe(true);
     expect(existsSync(path.join(cwd, "src/app/opengraph-image.png"))).toBe(true);
+  });
+
+  it("uses app/ when the app has no src/app", () => {
+    app("app");
+    expect(cli("pools")).toBe(0);
+    expect(existsSync(path.join(cwd, "app/icon.svg"))).toBe(true);
+    expect(existsSync(path.join(cwd, "src"))).toBe(false);
+  });
+
+  it("fails when there's no app directory, instead of creating one Next ignores", () => {
+    expect(cli("pools")).toBe(1);
+    expect(err.join("\n")).toContain("No app directory");
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
+  it("refuses to add static metadata next to code that already makes it", () => {
+    touch("src/app/apple-icon.tsx");
+    touch("src/app/opengraph-image.tsx");
+    expect(cli("packs")).toBe(1);
+    const message = err.join("\n");
+    expect(message).toContain(path.join("src", "app", "apple-icon.tsx"));
+    expect(message).toContain(path.join("src", "app", "opengraph-image.tsx"));
+    expect(message).toContain("--force");
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
+  it("writes anyway with --force", () => {
+    touch("src/app/apple-icon.tsx");
+    expect(cli("packs", "--force")).toBe(0);
+    expect(existsSync(path.join(cwd, "src/app/apple-icon.png"))).toBe(true);
+  });
+
+  it("says which files it replaced", () => {
+    touch("public/brand/pools-icon.svg");
+    app();
+    expect(cli("pools")).toBe(0);
+    expect(out).toContain(`replaced ${path.join(cwd, "public/brand/pools-icon.svg")}`);
+  });
+
+  it("marks existing files in a dry run", () => {
+    touch("src/app/icon.svg");
+    expect(cli("pools", "--dry-run")).toBe(0);
+    expect(out).toContain(`${path.join(cwd, "src/app/icon.svg")} (exists)`);
   });
 
   it("honors --root, --public and --app", () => {
@@ -49,6 +99,7 @@ describe("haruhime-brand", () => {
   });
 
   it("prints paths without writing on --dry-run", () => {
+    app();
     expect(cli("packs", "--dry-run")).toBe(0);
     expect(out[0]).toBe(path.join(cwd, "public/brand/packs-wordmark.svg"));
     expect(existsSync(path.join(cwd, "public"))).toBe(false);

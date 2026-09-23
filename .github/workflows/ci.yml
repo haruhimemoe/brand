@@ -40,8 +40,9 @@ jobs:
       - name: Test
         run: bun run test:coverage
 
+      # After a build, so the dry run lists what would really ship.
       - name: Pack (dry run)
-        run: npm pack --dry-run
+        run: bun run build && npm pack --dry-run
 
   dist:
     name: dist on Node ${{ matrix.node }}

@@ -76,16 +76,19 @@ export const layoutText = (text: string, options: TextOptions): TextRun => {
   const { weight, size, x = 0, baseline = 0, tracking = 0 } = options;
   const font = loadFont(weight);
   const scale = size / font.unitsPerEm;
+  // Check characters before shaping: ligatures (fi, fl) merge glyphs, so glyph i isn't char i.
+  // Only a plain space may be blank; other spaces would draw as an empty .notdef box.
+  for (const char of text) {
+    if (char !== " " && (/\s/.test(char) || !font.hasChar(char))) {
+      throw new Error(`No glyph for ${JSON.stringify(char)}: the bundled fonts cover ASCII only`);
+    }
+  }
   const glyphs = font.stringToGlyphs(text);
   const parts: string[] = [];
   const ink = emptyBox();
   let pen = 0;
 
   glyphs.forEach((glyph, index) => {
-    const char = text[index] ?? "";
-    if (glyph.index === 0 && char.trim() !== "") {
-      throw new Error(`No glyph for ${JSON.stringify(char)}: the bundled fonts cover ASCII only`);
-    }
     const toX = (gx: number) => x + (pen + gx) * scale;
     const toY = (gy: number) => baseline - gy * scale;
     let last: [number, number] = [0, 0];
@@ -98,8 +101,13 @@ export const layoutText = (text: string, options: TextOptions): TextRun => {
       const py = toY(command.y);
       switch (command.type) {
         case "M":
+          parts.push(`M${num(px)} ${num(py)}`);
+          break;
         case "L":
-          parts.push(`${command.type}${num(px)} ${num(py)}`);
+          // Fonts often repeat the current point; a zero-length line draws nothing.
+          if (num(px) !== num(last[0]) || num(py) !== num(last[1])) {
+            parts.push(`L${num(px)} ${num(py)}`);
+          }
           break;
         case "Q": {
           const cx = toX(command.x1);

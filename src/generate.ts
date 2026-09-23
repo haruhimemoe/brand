@@ -9,7 +9,7 @@
  * @modified Wed Sep 23, 2026
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { palette } from "./palette.js";
 import { svgToPng } from "./png.js";
@@ -51,6 +51,33 @@ export const brandFiles = (product: Product, options: BrandFileOptions = {}): Br
     { path: `${appDir}/opengraph-image.png`, contents: svgToPng(ogSvg(product), 1200) },
     { path: `${appDir}/opengraph-image.alt.txt`, contents: `${product.name}: ${product.tagline}` },
   ];
+};
+
+// Next.js metadata files by name: icon, apple-icon, opengraph-image, twitter-image, optionally
+// numbered, as images or as code that renders one.
+const METADATA_FILE =
+  /^(icon|apple-icon|opengraph-image|twitter-image)\d*\.(ico|png|jpe?g|gif|svg|tsx?|jsx?)$/;
+
+/**
+ * @function metadataConflicts
+ * @param root {string} the app's root folder
+ * @param appDir {string} the app directory, relative to root
+ * @param files {BrandFile[]} what's about to be written
+ * @returns {string[]} metadata files already in appDir that these files don't replace (e.g. an
+ *          apple-icon.tsx next to the apple-icon.png being added): Next.js would serve both
+ */
+export const metadataConflicts = (
+  root: string,
+  appDir: string,
+  files: readonly BrandFile[],
+): string[] => {
+  const dir = path.resolve(root, appDir);
+  if (!existsSync(dir)) return [];
+  const writing = new Set(files.map((file) => path.resolve(root, file.path)));
+  return readdirSync(dir)
+    .filter((name) => METADATA_FILE.test(name) && !writing.has(path.join(dir, name)))
+    .sort()
+    .map((name) => path.join(appDir, name));
 };
 
 /**

@@ -6,4 +6,4 @@ All notable changes to `@haruhimemoe/brand`. A change to how anything looks is a
 
 - First release: products packs (`pk.`, hue 333), pools (`pl.`, 200) and sheets (`sh.`, 150).
 - `palette`, `wordmarkSvg`, `iconSvg`, `ogSvg`, `svgToPng`, `brandFiles`, `writeBrandFiles`, `previewHtml`, `layoutText`.
-- The `haruhime-brand` CLI: write an app's brand files, list products, write a preview page.
+- The `haruhime-brand` CLI: write an app's brand files, list products, write a preview page. It finds `src/app` or `app`, refuses to add files next to existing icon or preview code unless `--force`, and says what it replaced.
