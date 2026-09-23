@@ -1,0 +1,71 @@
+{
+  "name": "@haruhimemoe/brand",
+  "version": "0.1.0",
+  "description": "Brand kit generator for the haruhime.moe osu! tools: palettes from one hue, Nunito wordmarks and monogram icons as outlined SVG, and the PNG icons and link previews Next.js serves as static files.",
+  "keywords": [
+    "brand",
+    "wordmark",
+    "icon",
+    "opengraph",
+    "svg",
+    "haruhime"
+  ],
+  "homepage": "https://github.com/haruhimemoe/brand#readme",
+  "bugs": "https://github.com/haruhimemoe/brand/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haruhimemoe/brand.git"
+  },
+  "license": "MIT",
+  "author": "David (https://dvh.sh)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "haruhime-brand": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "fonts",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "packageManager": "bun@1.4.2",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "bun run clean && tsc -p tsconfig.build.json",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:dist": "bun run build && node scripts/smoke.mjs",
+    "preview": "bun run build && node dist/cli.js preview --out preview",
+    "prepublishOnly": "bun run check && bun run typecheck && bun run test && bun run test:dist"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "opentype.js": "2.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@types/node": "26.6.2",
+    "@vitest/coverage-v8": "5.0.1",
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
+  }
+}
