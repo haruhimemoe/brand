@@ -1,9 +1,19 @@
 # Changelog
 
-All notable changes to `@haruhimemoe/brand`. A change to how anything looks is a minor version while we're on 0.x; apps rerun `haruhime-brand` to pick it up.
+All notable changes to `@haruhimemoe/brand` are documented in this file.
 
-## 0.1.0 (unreleased)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on 0.x, a change to how anything looks is a minor version; apps rerun `haruhime-brand` to pick it up.
 
-- First release: products packs (`pk.`, hue 333), pools (`pl.`, 200) and sheets (`sh.`, 150).
-- The README lists every export. `svgToPng` (and the CLI's PNG output) loads `@resvg/resvg-js` lazily, so importing the package for `palette` or `PRODUCTS` alone never needs the native binary.
-- The `haruhime-brand` CLI: write an app's brand files, list products, write a preview page. It finds `src/app` or `app` (an explicit `--app` must exist too), refuses to write outside `--root`, refuses to add files next to existing icon or preview code unless `--force`, and says what it replaced. `--version` and `help` are also commands; a command rejects options it doesn't use.
+## [Unreleased]
+
+## [0.1.0] - 2026-09-23
+
+### Added
+
+- Products packs (`pk.`, hue 333), pools (`pl.`, hue 200) and sheets (`sh.`, hue 150).
+- `palette(hue)`: backgrounds, text colors and highlights from one hue.
+- `wordmarkSvg`, `iconSvg` and `ogSvg`, outlined in Nunito so they need no fonts, and `svgToPng`, which loads the native renderer only when called.
+- The `haruhime-brand` CLI: writes an app's wordmarks, icons, link preview and palette into `public/` and the Next.js app directory, lists products, and writes a preview page. It refuses to write outside `--root` or next to existing icon or preview code unless `--force`.
+
+[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/haruhimemoe/brand/releases/tag/v0.1.0
