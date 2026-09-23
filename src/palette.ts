@@ -54,6 +54,9 @@ export const hslToHex = (h: number, s: number, l: number): string => {
  * @returns {Palette} every token as "#rrggbb"
  */
 export const palette = (hue: number): Palette => {
+  if (!Number.isInteger(hue) || hue < 0 || hue > 359) {
+    throw new RangeError(`hue must be an integer 0 to 359, got ${hue}.`);
+  }
   const entries = Object.entries(TOKENS).map(([token, [s, l]]) => [token, hslToHex(hue, s, l)]);
   return Object.fromEntries(entries) as Palette;
 };

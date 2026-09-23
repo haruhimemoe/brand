@@ -9,7 +9,7 @@
  * @modified Wed Sep 23, 2026
  */
 
-import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -20,15 +20,50 @@ import { isProductKey, PRODUCTS } from "./products.js";
 export const USAGE = `Usage:
   haruhime-brand <product> [--root <dir>] [--public <dir>] [--app <dir>] [--dry-run] [--force]
       Write the product's brand files into a Next.js app. Defaults: --root . --public public,
-      --app src/app or app (whichever exists). Refuses when the app directory already has
-      icon/apple-icon/opengraph-image files it wouldn't replace (Next would serve both), unless
-      --force.
+      --app src/app or app (whichever exists; an explicit --app must exist too). --app and
+      --public must resolve inside --root. Refuses when the app directory already has
+      icon/apple-icon/opengraph-image files it wouldn't replace (Next would serve both, or, on
+      the product's first run, a hand-made file), unless --force.
   haruhime-brand preview [--out <dir>]
       Write <dir>/index.html (default: preview) showing every product.
   haruhime-brand list
-      List the products.`;
+      List the products.
+  haruhime-brand help
+      Show this usage.
+  haruhime-brand --version
+      Print the installed version.`;
 
 export type Io = { cwd: string; out: (line: string) => void; err: (line: string) => void };
+
+// Options each command accepts, beyond the global --help/--version. Anything else is rejected
+// (e.g. `preview --root x`, `pools --out x`, `list --force` all ignored options silently before).
+const COMMAND_OPTIONS: Record<string, readonly string[]> = {
+  list: [],
+  help: [],
+  preview: ["out"],
+};
+const PRODUCT_OPTIONS = ["root", "public", "app", "dry-run", "force"];
+
+/**
+ * @function packageVersion
+ * @returns {string} the installed package.json's version
+ */
+const packageVersion = (): string => {
+  const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+    version: string;
+  };
+  return pkg.version;
+};
+
+// Throws when `target`, resolved against `root`, would land outside it (an absolute path
+// elsewhere, or a "../" that escapes --root).
+const requireInsideRoot = (root: string, target: string, flag: string): void => {
+  const resolved = path.resolve(root, target);
+  const rel = path.relative(root, resolved);
+  if (rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new RangeError(`${flag} must resolve inside --root (got ${target}).`);
+  }
+};
 
 /**
  * @function run
@@ -50,9 +85,25 @@ export const run = (args: readonly string[], io: Io): number => {
     io.out(USAGE);
     return 0;
   }
+  if (values.version) {
+    io.out(`haruhime-brand ${packageVersion()}`);
+    return 0;
+  }
   if (!command || rest.length > 0) {
     io.err(USAGE);
     return 1;
+  }
+  const allowed = COMMAND_OPTIONS[command] ?? (isProductKey(command) ? PRODUCT_OPTIONS : null);
+  if (allowed) {
+    const bad = Object.keys(values).find((key) => !allowed.includes(key));
+    if (bad) {
+      io.err(`Unknown option '--${bad}' for "${command}".\n\n${USAGE}`);
+      return 1;
+    }
+  }
+  if (command === "help") {
+    io.out(USAGE);
+    return 0;
   }
   if (command === "list") {
     for (const [key, product] of Object.entries(PRODUCTS)) {
@@ -73,8 +124,16 @@ export const run = (args: readonly string[], io: Io): number => {
     return 1;
   }
   const root = path.resolve(io.cwd, values.root ?? ".");
-  const appDir = values.app ?? findAppDir(root);
-  if (!appDir) {
+  let appDir: string | null;
+  try {
+    appDir = values.app ?? findAppDir(root);
+    if (appDir) requireInsideRoot(root, appDir, "--app");
+    if (values.public) requireInsideRoot(root, values.public, "--public");
+  } catch (error) {
+    io.err((error as Error).message);
+    return 1;
+  }
+  if (!appDir || !existsSync(path.resolve(root, appDir))) {
     io.err(
       `No app directory: neither ${path.join(root, "src/app")} nor ${path.join(root, "app")} exists. Pass --app <dir>.`,
     );
@@ -95,7 +154,7 @@ export const run = (args: readonly string[], io: Io): number => {
     );
     return 1;
   }
-  const targets = files.map((file) => path.join(root, file.path));
+  const targets = files.map((file) => path.resolve(root, file.path));
   if (values["dry-run"]) {
     for (const target of targets) io.out(existsSync(target) ? `${target} (exists)` : target);
     return 0;
@@ -127,6 +186,7 @@ const parse = (args: readonly string[]) =>
       "dry-run": { type: "boolean" },
       force: { type: "boolean" },
       help: { type: "boolean", short: "h" },
+      version: { type: "boolean" },
     },
   });
 

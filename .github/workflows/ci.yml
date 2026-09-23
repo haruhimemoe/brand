@@ -45,12 +45,17 @@ jobs:
         run: bun run build && npm pack --dry-run
 
   dist:
-    name: dist on Node ${{ matrix.node }}
-    runs-on: ubuntu-latest
+    name: dist on Node ${{ matrix.node }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # The engines floor and the current LTS.
+        # The engines floor and the current LTS, on Linux; one macOS leg exercises the bin and
+        # the native resvg load on the platform most contributors use.
+        os: [ubuntu-latest]
         node: ["22.12", "24"]
+        include:
+          - os: macos-latest
+            node: "24"
     steps:
       - uses: actions/checkout@v7
 

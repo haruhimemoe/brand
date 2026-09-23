@@ -88,14 +88,65 @@ describe("haruhime-brand", () => {
 
   it("marks existing files in a dry run", () => {
     touch("src/app/icon.svg");
-    expect(cli("pools", "--dry-run")).toBe(0);
+    // A first-run same-name file is a conflict (S4), so this also needs --force.
+    expect(cli("pools", "--dry-run", "--force")).toBe(0);
     expect(out).toContain(`${path.join(cwd, "src/app/icon.svg")} (exists)`);
   });
 
+  it("treats a hand-made app file as a conflict on a first run", () => {
+    app();
+    touch("src/app/icon.svg");
+    expect(cli("pools")).toBe(1);
+    const message = err.join("\n");
+    expect(message).toContain(path.join("src", "app", "icon.svg"));
+    expect(message).toContain("--force");
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
+  it("replaces an app file without --force once the product has run before", () => {
+    app();
+    expect(cli("pools")).toBe(0);
+    touch("src/app/icon.svg"); // a later hand edit
+    out = [];
+    expect(cli("pools")).toBe(0);
+    expect(out).toContain(`replaced ${path.join(cwd, "src/app/icon.svg")}`);
+  });
+
   it("honors --root, --public and --app", () => {
+    app("site/app");
     expect(cli("sheets", "--root", "site", "--public", "static", "--app", "app")).toBe(0);
     expect(existsSync(path.join(cwd, "site/static/brand/sheets-icon.svg"))).toBe(true);
     expect(existsSync(path.join(cwd, "site/app/apple-icon.png"))).toBe(true);
+  });
+
+  it("fails when an explicit --app doesn't exist, like the default path", () => {
+    expect(cli("pools", "--app", "src/ap")).toBe(1);
+    expect(err.join("\n")).toContain("No app directory");
+    expect(existsSync(path.join(cwd, "src/ap"))).toBe(false);
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
+  it("refuses a --root that doesn't exist when --app is given", () => {
+    expect(cli("pools", "--root", "nope", "--app", "app")).toBe(1);
+    expect(err.join("\n")).toContain("No app directory");
+  });
+
+  it.each([
+    ["--app", ["pools", "--app", "../outside"]],
+    ["--public", ["pools", "--public", "../outside"]],
+  ])("refuses a %s that resolves outside --root", (flag, args) => {
+    app();
+    expect(cli(...args)).toBe(1);
+    expect(err.join("\n")).toContain(flag);
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
+  it("resolves an absolute --app inside --root correctly (no phantom path)", () => {
+    const abs = path.join(cwd, "src/app");
+    mkdirSync(abs, { recursive: true });
+    expect(cli("pools", "--app", abs, "--dry-run")).toBe(0);
+    expect(out[0]).toBe(path.join(cwd, "public/brand/pools-wordmark.svg"));
+    expect(out.at(-1)).toBe(path.join(cwd, "src/app/opengraph-image.alt.txt"));
   });
 
   it("prints paths without writing on --dry-run", () => {
@@ -116,11 +167,26 @@ describe("haruhime-brand", () => {
     expect(out).toEqual([USAGE]);
   });
 
+  it("prints usage for the help command", () => {
+    expect(cli("help")).toBe(0);
+    expect(out).toEqual([USAGE]);
+  });
+
+  it("prints the package version for --version", () => {
+    expect(cli("--version")).toBe(0);
+    expect(out).toEqual([expect.stringMatching(/^haruhime-brand \d+\.\d+\.\d+/)]);
+  });
+
   it.each([
     [[], USAGE],
     [["pools", "extra"], USAGE],
     [["nope"], 'Unknown product "nope". Products: packs, pools, sheets.'],
     [["pools", "--bogus"], "Unknown option '--bogus'"],
+    [["preview", "--root", "x"], "--root"],
+    [["preview", "--force"], "--force"],
+    [["pools", "--out", "x"], "--out"],
+    [["list", "--force"], "--force"],
+    [["list", "--out", "x"], "--out"],
   ])("fails with exit 1 for %j", (args, message) => {
     expect(cli(...args)).toBe(1);
     expect(err.join("\n")).toContain(message);

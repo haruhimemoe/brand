@@ -32,4 +32,8 @@ describe("palette", () => {
     expect(hslToHex(120, 100, 25)).toBe("#008000");
     expect(hslToHex(240, 0, 100)).toBe("#ffffff");
   });
+
+  it.each([-1, 360, 1.5, Number.NaN])("rejects a hue outside 0 to 359 (%j)", (hue) => {
+    expect(() => palette(hue)).toThrow(RangeError);
+  });
 });

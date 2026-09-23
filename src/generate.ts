@@ -25,6 +25,10 @@ export type BrandFileOptions = {
   appDir?: string;
 };
 
+// Lowercase, starts with a letter: becomes a file name segment, so it can't escape a directory
+// (no "/", no "..") and stays predictable in a URL.
+const NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
+
 /**
  * @function brandFiles
  * @param product {Product} the tool
@@ -32,12 +36,20 @@ export type BrandFileOptions = {
  * @returns {BrandFile[]} the files, paths relative to the app's root, in a fixed order
  */
 export const brandFiles = (product: Product, options: BrandFileOptions = {}): BrandFile[] => {
+  if (!NAME_PATTERN.test(product.name)) {
+    throw new RangeError(
+      `Product.name must match ${NAME_PATTERN}, got ${JSON.stringify(product.name)}.`,
+    );
+  }
   const { publicDir = "public", appDir = "src/app" } = options;
   const brand = `${publicDir}/brand/${product.name}`;
   const icon = iconSvg(product);
   return [
     { path: `${brand}-wordmark.svg`, contents: wordmarkSvg(product) },
-    { path: `${brand}-wordmark-dark.svg`, contents: wordmarkSvg(product, { background: "light" }) },
+    {
+      path: `${brand}-wordmark-on-light.svg`,
+      contents: wordmarkSvg(product, { background: "light" }),
+    },
     { path: `${brand}-icon.svg`, contents: icon },
     {
       path: `${brand}-palette.json`,
@@ -63,8 +75,11 @@ const METADATA_FILE =
  * @param root {string} the app's root folder
  * @param appDir {string} the app directory, relative to root
  * @param files {BrandFile[]} what's about to be written
- * @returns {string[]} metadata files already in appDir that these files don't replace (e.g. an
- *          apple-icon.tsx next to the apple-icon.png being added): Next.js would serve both
+ * @returns {string[]} files in appDir that this write shouldn't silently touch: metadata files
+ *          these files don't replace by name (e.g. an apple-icon.tsx next to the apple-icon.png
+ *          being added, so Next.js would serve both), plus, on a first run for this product (no
+ *          public/brand/<name>-palette.json yet), any same-name file already there (it hasn't
+ *          been through this CLI before, so it may be hand-made)
  */
 export const metadataConflicts = (
   root: string,
@@ -74,8 +89,13 @@ export const metadataConflicts = (
   const dir = path.resolve(root, appDir);
   if (!existsSync(dir)) return [];
   const writing = new Set(files.map((file) => path.resolve(root, file.path)));
+  const paletteFile = files.find((file) => file.path.endsWith("-palette.json"));
+  const firstRun = !paletteFile || !existsSync(path.resolve(root, paletteFile.path));
   return readdirSync(dir)
-    .filter((name) => METADATA_FILE.test(name) && !writing.has(path.join(dir, name)))
+    .filter((name) => {
+      const target = path.join(dir, name);
+      return writing.has(target) ? firstRun : METADATA_FILE.test(name);
+    })
     .sort()
     .map((name) => path.join(appDir, name));
 };
