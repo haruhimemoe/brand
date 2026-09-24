@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-23
+
 ### Added
 
 - `bannerSvg(product, { background })`: a 1280×320 README banner with rounded corners, the wordmark (stacked, for haruhime) centered over the tagline. Dark is b6 with a c3 tagline; light is white with a b2 tagline.
@@ -27,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `wordmarkSvg`, `iconSvg` and `ogSvg`, outlined in Nunito so they need no fonts, and `svgToPng`, which loads the native renderer only when called.
 - The `haruhime-brand` CLI: writes an app's wordmarks, icons, link preview and palette into `public/` and the Next.js app directory, lists products, and writes a preview page. It refuses to write outside `--root` or next to existing icon or preview code unless `--force`.
 
-[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/haruhimemoe/brand/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/haruhimemoe/brand/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/haruhimemoe/brand/releases/tag/v0.1.0
