@@ -8,8 +8,13 @@
     "brand",
     "wordmark",
     "icon",
+    "favicon",
     "opengraph",
+    "banner",
+    "palette",
     "svg",
+    "nextjs",
+    "cli",
     "haruhime"
   ],
   "homepage": "https://github.com/haruhimemoe/brand#readme",
