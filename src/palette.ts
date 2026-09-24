@@ -1,8 +1,9 @@
 /**
  * @file src/palette.ts
  * @desc The palette every haruhime.moe tool uses, built from one hue: six backgrounds (b1 to b6,
- *       light to dark), four text colors (c1 to c4) and two highlights (h1, h2). The same HSL
- *       recipe as packs.haruhime.moe's globals.css, so an app only needs to set `--hue`.
+ *       light to dark), four text colors (c1 to c4) and two highlights (h1, h2), as hex. The
+ *       same HSL recipe as @haruhimemoe/ui's theme.css (which packs.haruhime.moe imports), where
+ *       an app only needs to set `--hue`.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026

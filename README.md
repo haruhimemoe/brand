@@ -9,7 +9,7 @@ The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), genera
 | pools | `pl.` | 200 (blue) |
 | sheets | `sh.` | 150 (green) |
 
-- **Palette from one hue:** six backgrounds, four text colors and two highlights, the same recipe as packs.haruhime.moe. An app sets `--hue` and its CSS does the rest.
+- **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which packs.haruhime.moe imports: there, an app sets `--hue` and the CSS does the rest.
 - **Wordmark:** the name in Nunito ExtraBold plus a dot in the highlight color (the deeper `h2` on light backgrounds, where `h1` is too pale), outlined to SVG paths.
 - **Stacked wordmark:** a product with a `suffix` (only haruhime, with `.moe`) drops the round dot. The suffix goes on a second line at half size, right-aligned to the end of the name, with its own dot in the highlight color and its letters in the text color.
 - **Icon:** the one- or two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.
@@ -54,7 +54,7 @@ pools	pl.	hue 200	https://pools.haruhime.moe
 sheets	sh.	hue 150	https://sheets.haruhime.moe
 ```
 
-`preview` writes into the folder you run it from. Run it from this repo, or add `preview/` to the app's `.gitignore`.
+`preview` writes into the folder you run it from (`preview/` by default). Add `preview/` to your app's `.gitignore`, or pass `--out` with a folder outside the app.
 
 ### Files it writes
 
@@ -90,6 +90,8 @@ For each file it prints `wrote <path>`, or `replaced <path>` when the file was a
 | `--force` | off | Writes even when the app directory has icon or link-preview files in the way (see [Moving an app over](#moving-an-app-over)). |
 
 `preview` takes only `--out`. `list` and `help` take no options. Any other option is an error.
+
+`--help` (or `-h`) and `--version` work with any command, or none. They're checked as soon as the options parse, so `list --help` prints the usage and `nope --version` prints the version, both exiting 0, even though the command alone would fail. With both, `--help` wins. An option that doesn't parse (unknown, missing its value, or a flag given one) still fails first: `pools --bogus --help` exits 1.
 
 ### README banner
 
@@ -185,7 +187,7 @@ A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:
 | Export | Signature | What it is |
 | --- | --- | --- |
 | `palette` | `(hue: number) => Palette` | Every token as `"#rrggbb"`: `b1` to `b6` backgrounds (light to dark), `c1` to `c4` text colors, `h1` and `h2` highlights. |
-| `TOKENS` | `Readonly<Record<Token, readonly [number, number]>>` | The recipe: each token's saturation and lightness in percent, like `b1: [10, 40]`, `c1: [40, 100]` (white) and `h1: [100, 70]`. |
+| `TOKENS` | `{ readonly b1: readonly [10, 40]; readonly b2: readonly [10, 30]; … }` (a `const` object, a literal tuple per token) | The recipe: each token's saturation and lightness in percent. `b1` to `b6` are `[10, 40]`, `[10, 30]`, `[10, 25]`, `[10, 20]`, `[10, 15]` and `[10, 10]`; `c1` to `c4` are `[40, 100]` (white), `[40, 90]`, `[40, 80]` and `[40, 70]`; `h1` is `[100, 70]` and `h2` is `[50, 45]`. |
 | `hslToHex` | `(h: number, s: number, l: number) => string` | `"#rrggbb"` for a hue in degrees and a saturation and lightness 0 to 100, rounded the way browsers resolve `hsl()`. |
 
 ### Drawings
@@ -234,14 +236,15 @@ A `TextRun` is `{ d, end, ink, line }`: `d` is the path data for every glyph, `e
 - `brandFiles(product, ...)` throws `RangeError` if `product.name` doesn't match `/^[a-z][a-z0-9-]*$/`.
 - `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them). That covers a product's `name`, `mark`, `suffix` and `tagline`.
 - `svgToPng` (and so `brandFiles`, `previewHtml`, and the CLI's product and `preview` commands) fails if `@resvg/resvg-js` has no native binary for the platform. See [Compatibility](#compatibility).
-- The CLI exits 0 when it's done. It exits 1, with a message on stderr, for:
+- The CLI exits 0 when it's done, and for `--help` or `--version` with any command (see [Options](#options)). It exits 1, with a message on stderr, for:
   - no command, or more than one (it prints the usage);
-  - an option it doesn't know, or `--root`, `--public`, `--app` or `--out` without a value;
+  - an option it doesn't know, `--root`, `--public`, `--app` or `--out` without a value, or `--dry-run`, `--force`, `--help` or `--version` given one (`--force=1`);
   - an option the command doesn't take, like `preview --force` or `pools --out x`;
   - an unknown product;
   - `--app` or `--public` resolving outside `--root`;
   - no app directory: neither `src/app` nor `app` under `--root`, or an `--app` that doesn't exist;
   - icon or link-preview files in the way, without `--force` (see [Moving an app over](#moving-an-app-over)).
+- Anything else that goes wrong on disk, like a folder the CLI can't write to, or an `--app`, `--public` or `--out` path that is a file, throws. The CLI exits 1 and Node prints the error (`EACCES`, `ENOTDIR`, `EEXIST`) with a stack trace, not a one-line message. Files written before a failed write stay.
 
 ## Compatibility
 

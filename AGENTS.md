@@ -26,12 +26,12 @@
 - **Draw glyphs through `layoutText`.** opentype.js 2.0's `getPath` returns glyphs upside down; `layoutText` does the y flip itself, and `tests/text.test.ts` guards it.
 - **Deterministic output.** Same product, same bytes. Don't add dates, random ids or system fonts.
 - **Build-time only.** Apps install this as a dev dependency and commit what it writes; nothing here should run per request, in a browser or on an edge runtime.
-- **resvg stays lazy.** Only `svgToPng` loads `@resvg/resvg-js`, through `createRequire` on its first call. Never import it at the top of a module; `tests/png.test.ts` checks that importing the package doesn't load it.
+- **resvg stays lazy.** Only `svgToPng` loads `@resvg/resvg-js`, through `createRequire` on its first call. Never value-import it at the top of a module. A type-only `import type` (as in `src/png.ts`) is fine, since TypeScript erases it. `tests/png.test.ts` checks that importing the package doesn't load it.
 - **Public types stay self-contained.** `dist/*.d.ts` may only import relative paths (opentype.js ships no types); `scripts/smoke.mjs` walks them to check.
 - **Product names are file names.** `brandFiles` rejects a `name` outside `/^[a-z][a-z0-9-]*$/`, so a name can't escape a directory. Keep that check.
 - **The CLI stays inside `--root`.** `--app` and `--public` must resolve inside it. It refuses to write next to other Next.js icon or link-preview files, or over hand-made ones on a product's first run, unless `--force`.
 - **Fonts are OFL.** Keep `fonts/OFL.txt` next to them. The bundled subset is printable ASCII; a product string outside it must fail loudly.
-- **The file list is public.** Adding, removing or reordering a file in `brandFiles` changes what apps commit: update the table in README.md, the count in `scripts/smoke.mjs` and the tests together.
+- **The file list is public.** Adding, removing or reordering a file in `brandFiles` changes what apps commit: update the table in README.md and the tests together. Adding or removing one also changes the count (11), so update it everywhere: README.md (the `brandFiles` row), the `src/generate.ts` line under Layout above, llms.txt (the summary and the Files it writes link), the two asserts in `scripts/smoke.mjs` and `tests/cli.test.ts`.
 - A visual change (hue, size, spacing) is a minor version: apps rerun the CLI to pick it up. Check it with `bun run preview` and look at the page, then accept the snapshot diffs in `tests/__snapshots__/` with `bun run test -u`. Never accept a snapshot diff you haven't looked at.
 - **Docs match the code.** A change to an export, option, output file, default or error updates README.md in the same commit, and llms.txt if a README heading it links to changes. Anything a user would notice gets a line under `## [Unreleased]` in CHANGELOG.md. Never edit a released entry.
 - **Exact pins.** Every dependency version in `package.json` is exact.

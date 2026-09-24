@@ -2,7 +2,7 @@
 
 ## Setup
 
-You need [Bun](https://bun.sh) (the version in `package.json`'s `packageManager`, 1.4.2) and Node 22.12 or later (`.nvmrc` has the version CI uses).
+You need [Bun](https://bun.sh) (the version in `package.json`'s `packageManager`, 1.4.2) and Node 22.12 or later. `.nvmrc` has 24, the version CI's check, typecheck and test job uses. CI also builds and smoke-tests `dist/` on Node 22.12 and 24 on Linux, and on Node 24 on macOS.
 
 ```sh
 bun install
@@ -28,7 +28,22 @@ bun run check && bun run typecheck && bun run test && bun run test:dist
 
 ## Adding a product
 
-Add an entry to `PRODUCTS` in `src/products.ts` with a name, a one- or two-letter mark, a hue, a tagline and a `url`. An optional `suffix` (like haruhime's `.moe`) stacks under the name in the wordmark instead of the round dot. The name is lowercase (`/^[a-z][a-z0-9-]*$/`, since it becomes file names) and the hue an integer 0 to 359; both throw a `RangeError` otherwise. Run `bun run preview` to see it next to the others, then follow step 4 above for the snapshots. Add it to the product table and the `<product>` list in README.md.
+Add an entry to `PRODUCTS` in `src/products.ts` with a `name`, `mark`, `hue`, `tagline` and `url`. An optional `suffix` (like haruhime's `.moe`) stacks under the name in the wordmark instead of the round dot. `tests/products.test.ts` checks every entry:
+
+- `name` equals the entry's key and is lowercase (`/^[a-z][a-z0-9-]*$/`, since it becomes file names).
+- `mark` is one or two lowercase letters (`/^[a-z]{1,2}$/`) and no other product uses it.
+- `hue` is 0 to 359. A tool (a product with no `suffix`) needs a hue no other tool uses.
+- `url` is exactly `https://<key>.haruhime.moe`, or `https://<key><suffix>` for a product with a `suffix`.
+- `tagline` and `suffix` are printable ASCII, so the bundled fonts can draw them.
+
+A bad name or a hue that isn't an integer 0 to 359 also throws a `RangeError` when drawing. Run `bun run preview` to see it next to the others, then follow step 4 above for the snapshots.
+
+Then update everything that names the products:
+
+- `tests/cli.test.ts`: the `list` output, the unknown-product message and the names the preview test checks.
+- README.md: the product list in the first line, the product table, the `<product>` list in the CLI table, the `list` output block and the `PRODUCTS` row under Products.
+- AGENTS.md: the `src/products.ts` line under Layout.
+- llms.txt: the product list in the summary.
 
 ## Releases
 
