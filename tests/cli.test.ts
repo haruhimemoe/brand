@@ -91,7 +91,7 @@ describe("haruhime-brand", () => {
 
   it("marks existing files in a dry run", () => {
     touch("src/app/icon.svg");
-    // A first-run same-name file is a conflict (S4), so this also needs --force.
+    // A same-name file on a product's first run is a conflict, so this also needs --force.
     expect(cli("pools", "--dry-run", "--force")).toBe(0);
     expect(out).toContain(`${path.join(cwd, "src/app/icon.svg")} (exists)`);
   });

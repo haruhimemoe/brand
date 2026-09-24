@@ -2,7 +2,7 @@
  * @file tests/png.test.ts
  * @desc svgToPng loads @resvg/resvg-js lazily: importing the package, even for svgToPng itself,
  *       must not touch the native module until a PNG is actually rendered. Consumers who only
- *       want palette() or PRODUCTS never need the native binary (see AGENTS.md, S3).
+ *       want palette() or PRODUCTS never need the native binary (AGENTS.md: "resvg stays lazy").
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
