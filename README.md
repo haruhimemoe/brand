@@ -76,9 +76,13 @@ wordmarkSvg(PRODUCTS.pools, { background: "light" }); // an SVG string
 
 `layoutText` draws with the bundled fonts, which are subset to printable ASCII. Any other character, including tabs and non-breaking spaces, throws rather than drawing a blank box.
 
-## Adding a product
+## Errors
 
-Add an entry to `PRODUCTS` in `src/products.ts` with a name, a two-letter mark, a hue, a tagline and a `url`. The name is lowercase (`/^[a-z][a-z0-9-]*$/`, since it becomes file names) and the hue an integer 0 to 359; both throw a `RangeError` otherwise. Run `bun run preview` to see it next to the others. Review and accept the new snapshots in `tests/__snapshots__/` (`bun run test -u`), then release a minor version.
+- `palette(hue)` throws `RangeError` if `hue` isn't an integer 0 to 359.
+- `brandFiles(product, ...)` throws `RangeError` if `product.name` doesn't match `/^[a-z][a-z0-9-]*$/`.
+- `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them).
+- The CLI exits 1 with a message for: an unknown product, an unknown option for the command, `--app`/`--public`/`--root` resolving outside `--root`, and no app directory found (pass `--app`). See "Moving an app over" above for the icon/link-preview conflict case.
+- `svgToPng` needs `@resvg/resvg-js`'s native binary at call time; see Compatibility below for which platforms ship one.
 
 ## Compatibility
 
@@ -90,14 +94,6 @@ This is a build-time tool: run it in Node, at build or from a script. Never impo
 
 MIT. Nunito (in `fonts/`) is under the SIL Open Font License 1.1; see [LICENSE](LICENSE) and [fonts/OFL.txt](fonts/OFL.txt).
 
-## Develop
+---
 
-```sh
-bun install
-bun run check && bun run typecheck && bun run test && bun run test:dist
-bun run preview   # then open preview/index.html
-```
-
-### Releasing
-
-npm only lets you add a trusted publisher to a package that already exists, so the first release is manual. The owner publishes 0.1.0 from a clean checkout of the tagged commit: `bun run build`, every check above passing, then `npm publish --access public --provenance=false`. Next, configure the trusted publisher (needs npm 11.15.0 or later and 2FA): `npm trust github @haruhimemoe/brand --file release.yml --repo haruhimemoe/brand --env npm --allow-publish`. Every later release goes through `release.yml`: publish a GitHub release whose tag is `v` plus the `package.json` version. A version with a prerelease part (`0.2.0-rc.1`) goes to the `next` dist-tag, anything else to `latest`.
+See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) to contribute.
