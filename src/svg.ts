@@ -2,21 +2,32 @@
  * @file src/svg.ts
  * @desc The brand drawings as SVG strings, all text outlined (no fonts needed to view them):
  *       the wordmark ("pools" and the dot), the monogram icon ("pl" and the dot) and the
- *       1200×630 link preview. The dot is a circle sitting on the baseline, in the h1 color.
+ *       1200×630 link preview. The dot is a circle sitting on the baseline, in the h1 color. A
+ *       product with a suffix stacks it instead: "haruhime" over a half-size ".moe", whose own
+ *       dot takes the highlight.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
  */
 
 import { palette } from "./palette.js";
-import type { Product } from "./products.js";
+import { fullName, type Product } from "./products.js";
 import { type Box, layoutText, num, type TextRun } from "./text.js";
 
 /** The dot's radius and its gap from the last letter, in em. */
 const DOT_RADIUS = 0.075;
 const DOT_GAP = 0.09;
 
-type Drawn = { svg: string; ink: Box };
+/**
+ * A suffix's font size, as a share of the name's, and the space between the name's ink and the
+ * suffix's, in the name's em. At 0.1 the lines sit close enough to read as one mark.
+ */
+const SUFFIX_SCALE = 0.5;
+const SUFFIX_GAP = 0.1;
+
+type Colors = { text: string; dot: string };
+/** SVG elements, their exact ink, and the bottom of the last line's line box (for layout). */
+type Drawn = { svg: string; ink: Box; bottom: number };
 
 // Text plus the dot after it, in one color scheme.
 const textWithDot = (
@@ -24,7 +35,7 @@ const textWithDot = (
   size: number,
   x: number,
   baseline: number,
-  colors: { text: string; dot: string },
+  colors: Colors,
 ): Drawn => {
   const run: TextRun = layoutText(text, { weight: 800, size, x, baseline });
   const r = DOT_RADIUS * size;
@@ -41,8 +52,60 @@ const textWithDot = (
       x2: Math.max(run.ink.x2, cx + r),
       y2: Math.max(run.ink.y2, cy + r),
     },
+    bottom: run.line.bottom,
   };
 };
+
+// The name, and under it the suffix at SUFFIX_SCALE, right-aligned to the name's ink. The
+// suffix's first character (the "." of ".moe") is drawn in the dot color, the rest in the text
+// color, each placed exactly where it sits when the suffix is laid out as one run.
+const stacked = (
+  name: string,
+  suffix: string,
+  size: number,
+  x: number,
+  baseline: number,
+  colors: Colors,
+): Drawn => {
+  const text = layoutText(name, { weight: 800, size, x, baseline });
+  const small = { weight: 800, size: size * SUFFIX_SCALE } as const;
+  const probe = layoutText(suffix, small).ink;
+  const at = {
+    x: text.ink.x2 - probe.x2,
+    baseline: text.ink.y2 + SUFFIX_GAP * size - probe.y1,
+  };
+  const whole = layoutText(suffix, { ...small, ...at });
+  const [head = "", ...rest] = suffix;
+  const tail = rest.join("");
+  const first = layoutText(head, { ...small, ...at });
+  const others = layoutText(tail, { ...small, ...at, x: whole.end - layoutText(tail, small).end });
+  return {
+    svg: [
+      `<path fill="${colors.text}" d="${text.d}"/>`,
+      `<path fill="${colors.dot}" d="${first.d}"/>`,
+      `<path fill="${colors.text}" d="${others.d}"/>`,
+    ].join("\n  "),
+    ink: {
+      x1: Math.min(text.ink.x1, whole.ink.x1),
+      y1: Math.min(text.ink.y1, whole.ink.y1),
+      x2: Math.max(text.ink.x2, whole.ink.x2),
+      y2: Math.max(text.ink.y2, whole.ink.y2),
+    },
+    bottom: whole.line.bottom,
+  };
+};
+
+// A product's wordmark at any size: stacked when it has a suffix, else the name and the dot.
+const drawWordmark = (
+  product: Product,
+  size: number,
+  x: number,
+  baseline: number,
+  colors: Colors,
+): Drawn =>
+  product.suffix === undefined
+    ? textWithDot(product.name, size, x, baseline, colors)
+    : stacked(product.name, product.suffix, size, x, baseline, colors);
 
 /**
  * @function escapeXml
@@ -64,7 +127,8 @@ export type WordmarkOptions = {
  * @function wordmarkSvg
  * @param product {Product} the tool
  * @param options {WordmarkOptions} which background it's for
- * @returns {string} the wordmark, cropped to its ink plus a 40-unit margin (font size 1000)
+ * @returns {string} the wordmark, cropped to its ink plus a 40-unit margin (font size 1000);
+ *          with a suffix, both lines
  */
 export const wordmarkSvg = (product: Product, options: WordmarkOptions = {}): string => {
   const colors = palette(product.hue);
@@ -73,11 +137,11 @@ export const wordmarkSvg = (product: Product, options: WordmarkOptions = {}): st
     options.background === "light"
       ? { text: colors.b6, dot: colors.h2 }
       : { text: colors.c1, dot: colors.h1 };
-  const drawn = textWithDot(product.name, 1000, 0, 1000, scheme);
+  const drawn = drawWordmark(product, 1000, 0, 1000, scheme);
   const pad = 40;
   const { x1, y1, x2, y2 } = drawn.ink;
   const viewBox = [x1 - pad, y1 - pad, x2 - x1 + 2 * pad, y2 - y1 + 2 * pad].map(num).join(" ");
-  return svgDocument(`viewBox="${viewBox}"`, product.name, drawn.svg);
+  return svgDocument(`viewBox="${viewBox}"`, fullName(product), drawn.svg);
 };
 
 export type IconOptions = {
@@ -109,7 +173,7 @@ export const iconSvg = (product: Product, options: IconOptions = {}): string => 
   const background = `<rect width="${ICON_SIZE}" height="${ICON_SIZE}"${radius} fill="${colors.b6}"/>`;
   return svgDocument(
     `viewBox="0 0 ${ICON_SIZE} ${ICON_SIZE}"`,
-    product.name,
+    fullName(product),
     `${background}\n  ${drawn.svg}`,
   );
 };
@@ -120,21 +184,21 @@ const OG = { width: 1200, height: 630, padding: 96, title: 150, tagline: 48, gap
 /**
  * @function ogSvg
  * @param product {Product} the tool
- * @returns {string} the 1200×630 link preview: wordmark over tagline, left-aligned, centered
- *          vertically
+ * @returns {string} the 1200×630 link preview: wordmark (stacked, with a suffix) over tagline,
+ *          left-aligned, centered vertically
  */
 export const ogSvg = (product: Product): string => {
   const colors = palette(product.hue);
-  // Lay out at baseline 0 to measure the two line boxes, then center the pair.
-  const titleLine = layoutText(product.name, { weight: 800, size: OG.title }).line;
+  const scheme = { text: colors.c1, dot: colors.h1 };
+  // Lay out at baseline 0 to measure the line boxes (the wordmark's first line's top, its last
+  // line's bottom), then center the block.
+  const titleTop = layoutText(product.name, { weight: 800, size: OG.title }).line.top;
+  const titleBottom = drawWordmark(product, OG.title, 0, 0, scheme).bottom;
   const taglineLine = layoutText(product.tagline, { weight: 400, size: OG.tagline }).line;
-  const taglineBaseline = titleLine.bottom + OG.gap - taglineLine.top;
-  const blockHeight = taglineBaseline + taglineLine.bottom - titleLine.top;
-  const titleBaseline = (OG.height - blockHeight) / 2 - titleLine.top;
-  const title = textWithDot(product.name, OG.title, OG.padding, titleBaseline, {
-    text: colors.c1,
-    dot: colors.h1,
-  });
+  const taglineBaseline = titleBottom + OG.gap - taglineLine.top;
+  const blockHeight = taglineBaseline + taglineLine.bottom - titleTop;
+  const titleBaseline = (OG.height - blockHeight) / 2 - titleTop;
+  const title = drawWordmark(product, OG.title, OG.padding, titleBaseline, scheme);
   const tagline = layoutText(product.tagline, {
     weight: 400,
     size: OG.tagline,
@@ -143,7 +207,7 @@ export const ogSvg = (product: Product): string => {
   });
   return svgDocument(
     `width="${OG.width}" height="${OG.height}" viewBox="0 0 ${OG.width} ${OG.height}"`,
-    `${product.name}: ${product.tagline}`,
+    `${fullName(product)}: ${product.tagline}`,
     [
       `<rect width="${OG.width}" height="${OG.height}" fill="${colors.b6}"/>`,
       title.svg,

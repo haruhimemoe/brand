@@ -1,7 +1,8 @@
 /**
  * @file tests/svg.test.ts
- * @desc The drawings: wordmark colors per background and its crop, icons the same letter size
- *       across products and inside their canvas, the link preview's size and label.
+ * @desc The drawings: wordmark colors per background and its crop, the parent brand's stacked
+ *       wordmark (".moe" right-aligned under "haruhime"), icons the same letter size across
+ *       products and inside their canvas, the link preview's size and label.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
@@ -11,6 +12,7 @@ import { describe, expect, it } from "vitest";
 import {
   escapeXml,
   iconSvg,
+  layoutText,
   ogSvg,
   PRODUCTS,
   type Product,
@@ -70,7 +72,87 @@ describe("wordmarkSvg", () => {
   });
 });
 
+// The filled paths of an SVG, in order: [fill, points].
+const paths = (svg: string) =>
+  [...svg.matchAll(/<path fill="([^"]+)" d="([^"]+)"/g)].map(
+    ([, fill, d]) => [fill, inkPoints(` d="${d}"`)] as const,
+  );
+const extent = (points: readonly [number, number][]) => ({
+  x1: Math.min(...points.map(([px]) => px)),
+  y1: Math.min(...points.map(([, py]) => py)),
+  x2: Math.max(...points.map(([px]) => px)),
+  y2: Math.max(...points.map(([, py]) => py)),
+});
+
+describe("wordmarkSvg with a suffix (stacked)", () => {
+  const product = PRODUCTS.haruhime;
+  const colors = palette(product.hue);
+
+  it.each([
+    ["dark", {}, colors.c1, colors.h1],
+    ["light", { background: "light" as const }, colors.b6, colors.h2],
+  ])(
+    "%s: name, then the suffix's dot in the highlight, then its letters",
+    (_, options, text, dot) => {
+      const svg = wordmarkSvg(product, options);
+      expect(paths(svg).map(([fill]) => fill)).toEqual([text, dot, text]);
+      // The suffix's dot is its own glyph, so the name gets no round dot of its own.
+      expect(svg).not.toContain("<circle");
+    },
+  );
+
+  it("is labelled with the whole name", () => {
+    expect(wordmarkSvg(product)).toContain('role="img" aria-label="haruhime.moe"');
+  });
+
+  it("puts the suffix on a second line, right-aligned to the name, at half size", () => {
+    const [name, dot, letters] = paths(wordmarkSvg(product)).map(([, points]) => extent(points));
+    if (!name || !dot || !letters) throw new Error("expected three paths");
+    // Below the name, with a gap.
+    expect(dot.y1).toBeGreaterThan(name.y2);
+    expect(letters.y1).toBeGreaterThan(name.y2);
+    // Ends where the name ends (control points may sit a hair outside the ink).
+    expect(Math.abs(letters.x2 - name.x2)).toBeLessThan(8);
+    // The dot, then the letters, on one baseline.
+    expect(dot.x2).toBeLessThan(letters.x1);
+    expect(dot.y2).toBeCloseTo(letters.y2, -1);
+    // The same glyphs as ".moe" at half the name's size.
+    const full = layoutText(".moe", { weight: 800, size: 1000 }).ink;
+    expect((letters.x2 - dot.x1) / (full.x2 - full.x1)).toBeCloseTo(0.5, 2);
+  });
+
+  it("is cropped to both lines' ink with the same 40-unit margin", () => {
+    const svg = wordmarkSvg(product);
+    const [x = 0, y = 0, width = 0, height = 0] = (/viewBox="([^"]+)"/.exec(svg)?.[1] ?? "")
+      .split(" ")
+      .map(Number);
+    const box = extent(inkPoints(svg));
+    expect(box.x1).toBeGreaterThanOrEqual(x + 39);
+    expect(box.y1).toBeGreaterThanOrEqual(y + 39);
+    expect(box.x2).toBeLessThanOrEqual(x + width - 39);
+    expect(box.y2).toBeLessThanOrEqual(y + height - 39);
+    // Tight: the ink reaches the margin on every side.
+    expect(box.x1).toBeLessThan(x + 41);
+    expect(box.y1).toBeLessThan(y + 41);
+    expect(box.x2).toBeGreaterThan(x + width - 41);
+    expect(box.y2).toBeGreaterThan(y + height - 41);
+  });
+});
+
 describe("iconSvg", () => {
+  it("draws a one-letter mark with the dot, like the two-letter ones", () => {
+    const svg = iconSvg(PRODUCTS.haruhime);
+    const colors = palette(PRODUCTS.haruhime.hue);
+    const [letter] = paths(svg);
+    expect(letter?.[0]).toBe(colors.c1);
+    // "h" is one outline.
+    expect([
+      ...(/<path fill="[^"]+" d="([^"]+)"/.exec(svg)?.[1] ?? "").matchAll(/M/g),
+    ]).toHaveLength(1);
+    expect(svg).toMatch(new RegExp(`<circle [^>]+fill="${colors.h1}"/>`));
+    expect(svg).toContain('aria-label="haruhime.moe"');
+  });
+
   it.each(products.map((product) => [product.name, product] as const))(
     "%s: keeps its ink inside the 64×64 canvas with a margin, centered horizontally",
     (_, product) => {
@@ -114,6 +196,28 @@ describe("ogSvg", () => {
     const dotX = (svg: string) => Number(/<circle cx="([\d.]+)"/.exec(svg)?.[1]);
     const wordmarkGap = dotX(wordmarkSvg(PRODUCTS.packs)) * 0.15 + 96;
     expect(dotX(ogSvg(PRODUCTS.packs))).toBeCloseTo(wordmarkGap, 0);
+  });
+
+  it("stacks the parent brand's wordmark over its tagline", () => {
+    const svg = ogSvg(PRODUCTS.haruhime);
+    const colors = palette(PRODUCTS.haruhime.hue);
+    expect(svg).toContain('aria-label="haruhime.moe: osu! tools for tournament hosts"');
+    const [name, dot, letters, tagline] = paths(svg).map(([fill, points]) => ({
+      fill,
+      ...extent(points),
+    }));
+    if (!name || !dot || !letters || !tagline) throw new Error("expected four paths");
+    expect([name.fill, dot.fill, letters.fill, tagline.fill]).toEqual([
+      colors.c1,
+      colors.h1,
+      colors.c1,
+      colors.c3,
+    ]);
+    expect(Math.abs(letters.x2 - name.x2)).toBeLessThan(2);
+    expect(letters.y1).toBeGreaterThan(name.y2);
+    expect(tagline.y1).toBeGreaterThan(letters.y2);
+    // Left-aligned on the same pen x; the glyphs' side bearings differ by a few pixels.
+    expect(Math.abs(name.x1 - tagline.x1)).toBeLessThan(10);
   });
 
   it("keeps everything inside the image", () => {

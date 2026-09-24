@@ -25,7 +25,7 @@ bun run check && bun run typecheck && bun run test && bun run test:dist
 
 ## Adding a product
 
-Add an entry to `PRODUCTS` in `src/products.ts` with a name, a two-letter mark, a hue, a tagline and a `url`. The name is lowercase (`/^[a-z][a-z0-9-]*$/`, since it becomes file names) and the hue an integer 0 to 359; both throw a `RangeError` otherwise. Run `bun run preview` to see it next to the others, then follow step 4 above for the snapshots.
+Add an entry to `PRODUCTS` in `src/products.ts` with a name, a one- or two-letter mark, a hue, a tagline and a `url`. An optional `suffix` (like haruhime's `.moe`) stacks under the name in the wordmark instead of the round dot. The name is lowercase (`/^[a-z][a-z0-9-]*$/`, since it becomes file names) and the hue an integer 0 to 359; both throw a `RangeError` otherwise. Run `bun run preview` to see it next to the others, then follow step 4 above for the snapshots.
 
 ## Releases
 

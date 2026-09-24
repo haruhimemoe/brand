@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { palette } from "./palette.js";
 import { svgToPng } from "./png.js";
-import type { Product } from "./products.js";
+import { fullName, type Product } from "./products.js";
 import { iconSvg, ogSvg, wordmarkSvg } from "./svg.js";
 
 export type BrandFile = { path: string; contents: string | Uint8Array };
@@ -61,7 +61,10 @@ export const brandFiles = (product: Product, options: BrandFileOptions = {}): Br
       contents: svgToPng(iconSvg(product, { shape: "square" }), 180),
     },
     { path: `${appDir}/opengraph-image.png`, contents: svgToPng(ogSvg(product), 1200) },
-    { path: `${appDir}/opengraph-image.alt.txt`, contents: `${product.name}: ${product.tagline}` },
+    {
+      path: `${appDir}/opengraph-image.alt.txt`,
+      contents: `${fullName(product)}: ${product.tagline}`,
+    },
   ];
 };
 

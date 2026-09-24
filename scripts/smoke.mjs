@@ -18,6 +18,10 @@ import { brandFiles, PRODUCTS } from "../dist/index.js";
 const files = brandFiles(PRODUCTS.pools);
 assert.equal(files.length, 8);
 assert.ok(String(files[0].contents).startsWith("<svg "), "wordmark is an SVG");
+assert.ok(
+  String(brandFiles(PRODUCTS.haruhime)[0].contents).includes('aria-label="haruhime.moe"'),
+  "the parent brand's stacked wordmark draws from dist",
+);
 
 const root = mkdtempSync(path.join(tmpdir(), "brand-smoke-"));
 try {

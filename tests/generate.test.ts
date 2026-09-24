@@ -67,6 +67,13 @@ describe("brandFiles", () => {
     expect(text("alt.txt")).toBe("pools: osu! mappools for tournament hosts");
   });
 
+  it("names the parent brand with its suffix in the alt text, as its link preview shows it", () => {
+    const alt = brandFiles(PRODUCTS.haruhime).find((file) =>
+      file.path.endsWith("opengraph-image.alt.txt"),
+    );
+    expect(alt?.contents).toBe("haruhime.moe: osu! tools for tournament hosts");
+  });
+
   it("is deterministic", () => {
     const first = brandFiles(PRODUCTS.sheets);
     const second = brandFiles(PRODUCTS.sheets);

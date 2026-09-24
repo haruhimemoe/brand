@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The parent brand, haruhime (`h.`, hue 333, https://haruhime.moe): `haruhime-brand haruhime` writes its files like any tool's.
+- An optional `suffix` on `Product` for a stacked wordmark: the suffix sits on a second line at half size, right-aligned to the name, its first character in the highlight color. haruhime's wordmark and link preview read "haruhime" over ".moe", and its labels and alt text say "haruhime.moe". The tools' drawings are unchanged.
+
 ## [0.1.0] - 2026-09-23
 
 ### Added

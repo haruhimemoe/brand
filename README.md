@@ -1,17 +1,19 @@
 # @haruhimemoe/brand
 
-The brand kit for the haruhime.moe osu! tools (packs, pools, sheets), generated from one table:
+The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), generated from one table:
 
 | Product | Mark | Hue |
 | --- | --- | --- |
+| haruhime (the parent site, haruhime.moe) | `h.` | 333 (pink) |
 | packs | `pk.` | 333 (pink) |
 | pools | `pl.` | 200 (blue) |
 | sheets | `sh.` | 150 (green) |
 
 - **Palette from one hue:** six backgrounds, four text colors and two highlights, the same recipe as packs.haruhime.moe. An app sets `--hue` and its CSS does the rest.
 - **Wordmark:** the name in Nunito ExtraBold plus a dot in the highlight color (the deeper `h2` on light backgrounds, where `h1` is too pale), outlined to SVG paths.
-- **Icon:** the two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.
-- **Link preview:** a 1200×630 image with the wordmark over the tagline.
+- **Stacked wordmark:** a product with a `suffix` (only haruhime, with `.moe`) drops the round dot. The suffix goes on a second line at half size, right-aligned to the end of the name, with its own dot in the highlight color and its letters in the text color.
+- **Icon:** the one- or two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.
+- **Link preview:** a 1200×630 image with the wordmark (stacked, for haruhime) over the tagline.
 
 All text is outlined, so the SVGs need no fonts, and the PNGs come out the same on every machine. Apps commit the generated files, and nothing renders per request.
 
@@ -64,7 +66,7 @@ wordmarkSvg(PRODUCTS.pools, { background: "light" }); // an SVG string
 
 | Export | What it is |
 | --- | --- |
-| `PRODUCTS`, `isProductKey` | The product table. |
+| `PRODUCTS`, `isProductKey` | The product table. A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix` for a stacked wordmark. |
 | `palette(hue)`, `TOKENS`, `hslToHex` | Colors: `b1`–`b6` backgrounds (light to dark), `c1`–`c4` text, `h1`–`h2` highlights. |
 | `wordmarkSvg`, `iconSvg`, `ogSvg` | The drawings as SVG strings. |
 | `svgToPng(svg, width)` | PNG bytes, via resvg. |

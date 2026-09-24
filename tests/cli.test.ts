@@ -29,6 +29,7 @@ describe("haruhime-brand", () => {
   it("lists the products", () => {
     expect(cli("list")).toBe(0);
     expect(out).toEqual([
+      "haruhime\th.\thue 333\thttps://haruhime.moe",
       "packs\tpk.\thue 333\thttps://packs.haruhime.moe",
       "pools\tpl.\thue 200\thttps://pools.haruhime.moe",
       "sheets\tsh.\thue 150\thttps://sheets.haruhime.moe",
@@ -149,6 +150,24 @@ describe("haruhime-brand", () => {
     expect(out.at(-1)).toBe(path.join(cwd, "src/app/opengraph-image.alt.txt"));
   });
 
+  it("dry-runs the parent brand like a tool", () => {
+    app();
+    expect(cli("haruhime", "--dry-run")).toBe(0);
+    expect(out).toEqual(
+      [
+        "public/brand/haruhime-wordmark.svg",
+        "public/brand/haruhime-wordmark-on-light.svg",
+        "public/brand/haruhime-icon.svg",
+        "public/brand/haruhime-palette.json",
+        "src/app/icon.svg",
+        "src/app/apple-icon.png",
+        "src/app/opengraph-image.png",
+        "src/app/opengraph-image.alt.txt",
+      ].map((file) => path.join(cwd, file)),
+    );
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
   it("prints paths without writing on --dry-run", () => {
     app();
     expect(cli("packs", "--dry-run")).toBe(0);
@@ -159,7 +178,8 @@ describe("haruhime-brand", () => {
   it("writes a preview page", () => {
     expect(cli("preview", "--out", "look")).toBe(0);
     const html = readFileSync(path.join(cwd, "look/index.html"), "utf8");
-    for (const name of ["packs", "pools", "sheets"]) expect(html).toContain(`<h2>${name} `);
+    for (const name of ["haruhime", "packs", "pools", "sheets"])
+      expect(html).toContain(`<h2>${name} `);
   });
 
   it("prints usage for --help", () => {
@@ -180,7 +200,7 @@ describe("haruhime-brand", () => {
   it.each([
     [[], USAGE],
     [["pools", "extra"], USAGE],
-    [["nope"], 'Unknown product "nope". Products: packs, pools, sheets.'],
+    [["nope"], 'Unknown product "nope". Products: haruhime, packs, pools, sheets.'],
     [["pools", "--bogus"], "Unknown option '--bogus'"],
     [["preview", "--root", "x"], "--root"],
     [["preview", "--force"], "--force"],
