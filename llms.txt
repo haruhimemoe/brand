@@ -1,0 +1,41 @@
+# @haruhimemoe/brand
+
+> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is a build-time Node tool (Node 22.12 or later, ES modules with types): apps install it as a dev dependency and commit what it writes.
+
+## Docs
+
+- [README](https://github.com/haruhimemoe/brand#readme): what it makes, install, the CLI and the full API
+- [Install](https://github.com/haruhimemoe/brand#install): `bun add -d @haruhimemoe/brand` or `npm install --save-dev @haruhimemoe/brand`
+- [CLI](https://github.com/haruhimemoe/brand#cli): the `<product>`, `list`, `preview`, `help` and `--version` commands
+- [Files it writes](https://github.com/haruhimemoe/brand#files-it-writes): the 11 output files, their paths and what each is for
+- [Options](https://github.com/haruhimemoe/brand#options): `--root`, `--public`, `--app`, `--dry-run` and `--force`, with defaults
+- [README banner](https://github.com/haruhimemoe/brand#readme-banner): the `<picture>` snippet for a theme-aware, linked banner at the top of a GitHub README
+- [Moving an app over](https://github.com/haruhimemoe/brand#moving-an-app-over): when the CLI stops on existing icon or link-preview files, and `--force`
+- [API](https://github.com/haruhimemoe/brand#api): examples, then every export with its signature
+- [Palette](https://github.com/haruhimemoe/brand#palette): `palette`, `TOKENS` and `hslToHex`
+- [Drawings](https://github.com/haruhimemoe/brand#drawings): `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`, `svgToPng` and `escapeXml`
+- [App files](https://github.com/haruhimemoe/brand#app-files): `brandFiles`, `metadataConflicts`, `writeBrandFiles` and `previewHtml`
+- [Text](https://github.com/haruhimemoe/brand#text): `layoutText`, its options and result
+- [Errors](https://github.com/haruhimemoe/brand#errors): what throws, and when the CLI exits 1
+- [Compatibility](https://github.com/haruhimemoe/brand#compatibility): Node floor, the native resvg binary's platforms, build-time only
+- [AGENTS.md](https://github.com/haruhimemoe/brand/blob/main/AGENTS.md): file layout, conventions and invariants for AI agents changing this repo
+
+## Package
+
+- [npm](https://www.npmjs.com/package/@haruhimemoe/brand): `@haruhimemoe/brand` on the npm registry
+- [Source](https://github.com/haruhimemoe/brand): the GitHub repository and its issues
+
+## Related
+
+- [haruhime.moe](https://www.haruhime.moe): the parent site, whose brand files this package writes
+- [haruhime.moe brand page](https://www.haruhime.moe/brand): the name, logos, colors and the packs/pools/sheets icons, as shown on the site
+- [haruhime.moe llms.txt](https://www.haruhime.moe/llms.txt): the site's own llms.txt, with every tool
+- [packs.haruhime.moe](https://packs.haruhime.moe): osu! beatmap packs for tournament hosts, one of the products
+- [@haruhimemoe/ui](https://github.com/haruhimemoe/ui): the shared React components and theme for the haruhime.moe tools, built on the same palette tokens
+
+## Optional
+
+- [CHANGELOG](https://github.com/haruhimemoe/brand/blob/main/CHANGELOG.md): release history
+- [CONTRIBUTING](https://github.com/haruhimemoe/brand/blob/main/CONTRIBUTING.md): setup, checks and adding a product
+- [SECURITY](https://github.com/haruhimemoe/brand/blob/main/SECURITY.md): how to report a vulnerability
+- [LICENSE](https://github.com/haruhimemoe/brand/blob/main/LICENSE): MIT, with Nunito under the SIL Open Font License 1.1
