@@ -14,6 +14,7 @@ The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), genera
 - **Stacked wordmark:** a product with a `suffix` (only haruhime, with `.moe`) drops the round dot. The suffix goes on a second line at half size, right-aligned to the end of the name, with its own dot in the highlight color and its letters in the text color.
 - **Icon:** the one- or two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.
 - **Link preview:** a 1200×630 image with the wordmark (stacked, for haruhime) over the tagline.
+- **README banner:** a 1280×320 image with rounded corners for GitHub READMEs: the wordmark (stacked, for haruhime) centered over the tagline. One for dark pages, one for light.
 
 All text is outlined, so the SVGs need no fonts, and the PNGs come out the same on every machine. Apps commit the generated files, and nothing renders per request.
 
@@ -38,6 +39,9 @@ bunx haruhime-brand list
 | `public/brand/<name>-wordmark.svg` | dark backgrounds (white text) |
 | `public/brand/<name>-wordmark-on-light.svg` | light backgrounds (dark text) |
 | `public/brand/<name>-icon.svg` | brand page, schema.org `logo` |
+| `public/brand/<name>-banner.svg` | README banner, dark background (1280×320) |
+| `public/brand/<name>-banner-on-light.svg` | README banner, white background |
+| `public/brand/<name>-banner.png` | the dark banner as a 1280×320 PNG, for places that don't show SVG |
 | `public/brand/<name>-palette.json` | `{ hue, colors }` for a brand page |
 | `src/app/icon.svg` | favicon (Next.js serves it by name) |
 | `src/app/apple-icon.png` | 180×180, square corners (iOS rounds them) |
@@ -46,6 +50,21 @@ bunx haruhime-brand list
 Options: `--root <dir>` (the app, default `.`; `--app` and `--public` must resolve inside it), `--public <dir>` (default `public`), `--app <dir>` (default: `src/app`, else `app`; it stops if neither exists), `--dry-run` (print the paths, marking ones that exist), `--force` (see below). `haruhime-brand --version` prints the installed version; `haruhime-brand help` prints this usage.
 
 Rerun it after upgrading this package and commit the changes. It says which files it `wrote` and which it `replaced`.
+
+### README banner
+
+Next.js serves `public/` from the site root, so once an app has deployed its brand files, its banners have stable URLs: haruhime.moe's are `https://www.haruhime.moe/brand/haruhime-banner.svg` and `https://www.haruhime.moe/brand/haruhime-banner-on-light.svg`. Use the address the site answers on directly, with no redirect (for haruhime.moe that's `www.haruhime.moe`): GitHub loads README images through a proxy that may not follow one. To show the banner that matches the reader's GitHub theme, linked to the site, put this at the top of a README (a repo's, or an organization's `profile/README.md` in its `.github` repo):
+
+```html
+<a href="https://www.haruhime.moe">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="https://www.haruhime.moe/brand/haruhime-banner-on-light.svg">
+    <img alt="haruhime.moe: osu! tools for tournament hosts" src="https://www.haruhime.moe/brand/haruhime-banner.svg" width="100%">
+  </picture>
+</a>
+```
+
+Without the link, clicking the banner opens the image instead of the site. Swap `haruhime` for the product and its site. The banner scales to the README's width, usually 640 to 830 pixels on GitHub, and the wordmark stays readable there.
 
 ### Moving an app over
 
@@ -58,17 +77,18 @@ The first time a product is written into an app, a hand-made `icon.svg`, `apple-
 ## API
 
 ```ts
-import { iconSvg, ogSvg, palette, PRODUCTS, wordmarkSvg } from "@haruhimemoe/brand";
+import { bannerSvg, iconSvg, ogSvg, palette, PRODUCTS, wordmarkSvg } from "@haruhimemoe/brand";
 
 palette(PRODUCTS.pools.hue).h1; // "#66ccff"
 wordmarkSvg(PRODUCTS.pools, { background: "light" }); // an SVG string
+bannerSvg(PRODUCTS.haruhime); // the 1280×320 README banner, dark
 ```
 
 | Export | What it is |
 | --- | --- |
 | `PRODUCTS`, `isProductKey` | The product table. A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix` for a stacked wordmark. |
 | `palette(hue)`, `TOKENS`, `hslToHex` | Colors: `b1`–`b6` backgrounds (light to dark), `c1`–`c4` text, `h1`–`h2` highlights. |
-| `wordmarkSvg`, `iconSvg`, `ogSvg` | The drawings as SVG strings. |
+| `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg` | The drawings as SVG strings. `wordmarkSvg` and `bannerSvg` take `{ background: "dark" \| "light" }` (default `"dark"`). |
 | `svgToPng(svg, width)` | PNG bytes, via resvg. |
 | `brandFiles`, `writeBrandFiles` | What the CLI writes, as data, and the writer. |
 | `metadataConflicts` | Icon and preview files already in an app directory that the brand files wouldn't replace. |
@@ -82,7 +102,7 @@ wordmarkSvg(PRODUCTS.pools, { background: "light" }); // an SVG string
 
 - `palette(hue)` throws `RangeError` if `hue` isn't an integer 0 to 359.
 - `brandFiles(product, ...)` throws `RangeError` if `product.name` doesn't match `/^[a-z][a-z0-9-]*$/`.
-- `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them).
+- `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them).
 - The CLI exits 1 with a message for: an unknown product, an unknown option for the command, `--app`/`--public`/`--root` resolving outside `--root`, and no app directory found (pass `--app`). See "Moving an app over" above for the icon/link-preview conflict case.
 - `svgToPng` needs `@resvg/resvg-js`'s native binary at call time; see Compatibility below for which platforms ship one.
 

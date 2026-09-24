@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `bannerSvg(product, { background })`: a 1280×320 README banner with rounded corners, the wordmark (stacked, for haruhime) centered over the tagline. Dark is b6 with a c3 tagline; light is white with a b2 tagline.
+- `haruhime-brand <product>` also writes `public/brand/<name>-banner.svg`, `<name>-banner-on-light.svg` and `<name>-banner.png` (1280×320), and the preview page shows each product's banners.
+
 ## [0.2.0] - 2026-09-23
 
 ### Added

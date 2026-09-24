@@ -1,9 +1,9 @@
 /**
  * @file src/generate.ts
- * @desc Every brand file an app commits, as paths and contents: the wordmarks, icon and palette
- *       for its brand page (public/brand/), and the files Next.js serves by name from the app
- *       directory (icon.svg, apple-icon.png, opengraph-image.png and its alt text). Static files,
- *       so nothing renders per request.
+ * @desc Every brand file an app commits, as paths and contents: the wordmarks, icon, README
+ *       banners and palette for its brand page (public/brand/), and the files Next.js serves by
+ *       name from the app directory (icon.svg, apple-icon.png, opengraph-image.png and its alt
+ *       text). Static files, so nothing renders per request.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
@@ -14,7 +14,7 @@ import path from "node:path";
 import { palette } from "./palette.js";
 import { svgToPng } from "./png.js";
 import { fullName, type Product } from "./products.js";
-import { iconSvg, ogSvg, wordmarkSvg } from "./svg.js";
+import { bannerSvg, iconSvg, ogSvg, wordmarkSvg } from "./svg.js";
 
 export type BrandFile = { path: string; contents: string | Uint8Array };
 
@@ -44,6 +44,7 @@ export const brandFiles = (product: Product, options: BrandFileOptions = {}): Br
   const { publicDir = "public", appDir = "src/app" } = options;
   const brand = `${publicDir}/brand/${product.name}`;
   const icon = iconSvg(product);
+  const banner = bannerSvg(product);
   return [
     { path: `${brand}-wordmark.svg`, contents: wordmarkSvg(product) },
     {
@@ -51,6 +52,12 @@ export const brandFiles = (product: Product, options: BrandFileOptions = {}): Br
       contents: wordmarkSvg(product, { background: "light" }),
     },
     { path: `${brand}-icon.svg`, contents: icon },
+    { path: `${brand}-banner.svg`, contents: banner },
+    {
+      path: `${brand}-banner-on-light.svg`,
+      contents: bannerSvg(product, { background: "light" }),
+    },
+    { path: `${brand}-banner.png`, contents: svgToPng(banner, 1280) },
     {
       path: `${brand}-palette.json`,
       contents: `${JSON.stringify({ hue: product.hue, colors: palette(product.hue) }, null, 2)}\n`,

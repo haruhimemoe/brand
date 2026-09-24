@@ -1,16 +1,16 @@
 /**
  * @file src/svg.ts
  * @desc The brand drawings as SVG strings, all text outlined (no fonts needed to view them):
- *       the wordmark ("pools" and the dot), the monogram icon ("pl" and the dot) and the
- *       1200×630 link preview. The dot is a circle sitting on the baseline, in the h1 color. A
- *       product with a suffix stacks it instead: "haruhime" over a half-size ".moe", whose own
- *       dot takes the highlight.
+ *       the wordmark ("pools" and the dot), the monogram icon ("pl" and the dot), the 1200×630
+ *       link preview and the 1280×320 README banner. The dot is a circle sitting on the
+ *       baseline, in the h1 color. A product with a suffix stacks it instead: "haruhime" over a
+ *       half-size ".moe", whose own dot takes the highlight.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
  */
 
-import { palette } from "./palette.js";
+import { type Palette, palette } from "./palette.js";
 import { fullName, type Product } from "./products.js";
 import { type Box, layoutText, num, type TextRun } from "./text.js";
 
@@ -118,9 +118,18 @@ export const escapeXml = (value: string): string =>
 const svgDocument = (attributes: string, label: string, body: string): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" ${attributes} role="img" aria-label="${escapeXml(label)}">\n  ${body}\n</svg>\n`;
 
+type Background = "dark" | "light";
+
+// The wordmark's colors on a background. On white, h1 is too pale for the dot (sheets' green is
+// 1.3:1); the deeper h2 carries it.
+const wordmarkColors = (colors: Palette, background: Background = "dark"): Colors =>
+  background === "light"
+    ? { text: colors.b6, dot: colors.h2 }
+    : { text: colors.c1, dot: colors.h1 };
+
 export type WordmarkOptions = {
   /** "dark": white text for dark backgrounds (default). "light": dark text for light ones. */
-  background?: "dark" | "light";
+  background?: Background;
 };
 
 /**
@@ -131,12 +140,7 @@ export type WordmarkOptions = {
  *          with a suffix, both lines
  */
 export const wordmarkSvg = (product: Product, options: WordmarkOptions = {}): string => {
-  const colors = palette(product.hue);
-  // On white, h1 is too pale for the dot (sheets' green is 1.3:1); the deeper h2 carries it.
-  const scheme =
-    options.background === "light"
-      ? { text: colors.b6, dot: colors.h2 }
-      : { text: colors.c1, dot: colors.h1 };
+  const scheme = wordmarkColors(palette(product.hue), options.background);
   const drawn = drawWordmark(product, 1000, 0, 1000, scheme);
   const pad = 40;
   const { x1, y1, x2, y2 } = drawn.ink;
@@ -178,6 +182,43 @@ export const iconSvg = (product: Product, options: IconOptions = {}): string => 
   );
 };
 
+/** Font sizes of a wordmark over a tagline, and the space between their line boxes. */
+type LockupSizes = { title: number; tagline: number; gap: number };
+
+/** Where a lockup's lines go: each line's pen x, and the title's baseline. */
+type LockupPlace = { title: number; tagline: number; baseline: number };
+
+// The wordmark (stacked, with a suffix) over the tagline, as the link preview and the banner
+// draw it. Measured with the title's baseline at 0 and both pens at x 0: the block's line box
+// (the name's ascender to the tagline's descender), its ink top and bottom, and the pen x that
+// centers each line's ink on 0. `draw` places it.
+const lockup = (product: Product, sizes: LockupSizes, scheme: Colors, taglineColor: string) => {
+  const titleTop = layoutText(product.name, { weight: 800, size: sizes.title }).line.top;
+  const title = drawWordmark(product, sizes.title, 0, 0, scheme);
+  const tagline = layoutText(product.tagline, { weight: 400, size: sizes.tagline });
+  const taglineBaseline = title.bottom + sizes.gap - tagline.line.top;
+  return {
+    line: { top: titleTop, bottom: taglineBaseline + tagline.line.bottom },
+    ink: { top: title.ink.y1, bottom: taglineBaseline + tagline.ink.y2 },
+    center: {
+      title: -(title.ink.x1 + title.ink.x2) / 2,
+      tagline: -(tagline.ink.x1 + tagline.ink.x2) / 2,
+    },
+    draw: (at: LockupPlace): string => {
+      const drawn = layoutText(product.tagline, {
+        weight: 400,
+        size: sizes.tagline,
+        x: at.tagline,
+        baseline: at.baseline + taglineBaseline,
+      });
+      return [
+        drawWordmark(product, sizes.title, at.title, at.baseline, scheme).svg,
+        `<path fill="${taglineColor}" d="${drawn.d}"/>`,
+      ].join("\n  ");
+    },
+  };
+};
+
 /** Link preview layout, in pixels. */
 const OG = { width: 1200, height: 630, padding: 96, title: 150, tagline: 48, gap: 16 } as const;
 
@@ -189,29 +230,60 @@ const OG = { width: 1200, height: 630, padding: 96, title: 150, tagline: 48, gap
  */
 export const ogSvg = (product: Product): string => {
   const colors = palette(product.hue);
-  const scheme = { text: colors.c1, dot: colors.h1 };
-  // Lay out at baseline 0 to measure the line boxes (the wordmark's first line's top, its last
-  // line's bottom), then center the block.
-  const titleTop = layoutText(product.name, { weight: 800, size: OG.title }).line.top;
-  const titleBottom = drawWordmark(product, OG.title, 0, 0, scheme).bottom;
-  const taglineLine = layoutText(product.tagline, { weight: 400, size: OG.tagline }).line;
-  const taglineBaseline = titleBottom + OG.gap - taglineLine.top;
-  const blockHeight = taglineBaseline + taglineLine.bottom - titleTop;
-  const titleBaseline = (OG.height - blockHeight) / 2 - titleTop;
-  const title = drawWordmark(product, OG.title, OG.padding, titleBaseline, scheme);
-  const tagline = layoutText(product.tagline, {
-    weight: 400,
-    size: OG.tagline,
-    x: OG.padding,
-    baseline: titleBaseline + taglineBaseline,
-  });
+  const block = lockup(product, OG, wordmarkColors(colors), colors.c3);
+  // Center the block's line box (font metrics, not ink), so the tools' titles share a baseline
+  // whatever their letters.
+  const baseline = (OG.height - (block.line.bottom - block.line.top)) / 2 - block.line.top;
   return svgDocument(
     `width="${OG.width}" height="${OG.height}" viewBox="0 0 ${OG.width} ${OG.height}"`,
     `${fullName(product)}: ${product.tagline}`,
     [
       `<rect width="${OG.width}" height="${OG.height}" fill="${colors.b6}"/>`,
-      title.svg,
-      `<path fill="${colors.c3}" d="${tagline.d}"/>`,
+      block.draw({ title: OG.padding, tagline: OG.padding, baseline }),
+    ].join("\n  "),
+  );
+};
+
+/**
+ * README banner layout, in pixels: 4:1, sized so the wordmark still reads when a README shows
+ * it 640 to 830 wide. The title and tagline keep about the link preview's 3:1 ratio.
+ */
+const BANNER = { width: 1280, height: 320, radius: 24, title: 128, tagline: 40, gap: 0 } as const;
+
+export type BannerOptions = {
+  /** "dark": the b6 background, white text (default). "light": white, dark text. */
+  background?: Background;
+};
+
+/**
+ * @function bannerSvg
+ * @param product {Product} the tool
+ * @param options {BannerOptions} dark or light background
+ * @returns {string} the 1280×320 README banner, rounded corners: the wordmark (stacked, with a
+ *          suffix) over the tagline, each centered across, the two centered down by their ink
+ */
+export const bannerSvg = (product: Product, options: BannerOptions = {}): string => {
+  const colors = palette(product.hue);
+  const light = options.background === "light";
+  // The tagline steps down from the name the same way on both: c3 under c1 on b6 (10:1 to 12:1
+  // contrast for these hues), b2 under b6 on white (8:1 to 9:1). c1 is white for every hue.
+  const block = lockup(
+    product,
+    BANNER,
+    wordmarkColors(colors, options.background),
+    light ? colors.b2 : colors.c3,
+  );
+  const baseline = BANNER.height / 2 - (block.ink.top + block.ink.bottom) / 2;
+  return svgDocument(
+    `width="${BANNER.width}" height="${BANNER.height}" viewBox="0 0 ${BANNER.width} ${BANNER.height}"`,
+    `${fullName(product)}: ${product.tagline}`,
+    [
+      `<rect width="${BANNER.width}" height="${BANNER.height}" rx="${BANNER.radius}" fill="${light ? colors.c1 : colors.b6}"/>`,
+      block.draw({
+        title: BANNER.width / 2 + block.center.title,
+        tagline: BANNER.width / 2 + block.center.tagline,
+        baseline,
+      }),
     ].join("\n  "),
   );
 };

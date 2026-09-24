@@ -1,7 +1,8 @@
 /**
  * @file src/preview.ts
- * @desc One self-contained HTML page showing every product's wordmarks, icons, link preview and
- *       palette side by side, for choosing hues and checking a change before committing files.
+ * @desc One self-contained HTML page showing every product's wordmarks, icons, link preview,
+ *       README banners and palette side by side, for choosing hues and checking a change before
+ *       committing files.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
@@ -10,7 +11,7 @@
 import { palette } from "./palette.js";
 import { svgToPng } from "./png.js";
 import type { Product } from "./products.js";
-import { escapeXml, iconSvg, ogSvg, wordmarkSvg } from "./svg.js";
+import { bannerSvg, escapeXml, iconSvg, ogSvg, wordmarkSvg } from "./svg.js";
 
 const dataUri = (mime: string, bytes: Uint8Array | string): string =>
   `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`;
@@ -34,6 +35,10 @@ const section = (product: Product): string => {
     <img class="icon" alt="${escapeXml(product.name)} apple icon" src="${dataUri("image/png", svgToPng(iconSvg(product, { shape: "square" }), 180))}">
   </div>
   <img class="og" alt="${escapeXml(product.name)} link preview" src="${dataUri("image/png", svgToPng(ogSvg(product), 1200))}">
+  <div class="banners">
+    ${svg(bannerSvg(product), `${product.name} banner`, "banner")}
+    ${svg(bannerSvg(product, { background: "light" }), `${product.name} banner on light`, "banner")}
+  </div>
   <div class="swatches">${swatches}</div>
 </section>`;
 };
@@ -57,6 +62,8 @@ export const previewHtml = (products: readonly Product[]): string => `<!doctype 
   .wordmark { height: 64px; display: block; }
   .icon { width: 64px; height: 64px; }
   .og { width: 600px; max-width: 100%; border-radius: 8px; display: block; }
+  .banners { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+  .banner { width: 640px; max-width: 100%; display: block; }
   .swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
   figure { margin: 0; font-size: 11px; color: #aaa; }
   figure div { width: 72px; height: 32px; border-radius: 6px; }

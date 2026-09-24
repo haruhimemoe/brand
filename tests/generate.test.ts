@@ -1,7 +1,7 @@
 /**
  * @file tests/generate.test.ts
- * @desc The files an app commits: paths and order, custom folders, PNG sizes, deterministic
- *       output, and writing them to disk.
+ * @desc The files an app commits: paths and order, custom folders, the README banners, PNG
+ *       sizes, deterministic output, and writing them to disk.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
@@ -12,9 +12,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  bannerSvg,
   brandFiles,
   metadataConflicts,
   PRODUCTS,
+  type Product,
   palette,
   svgToPng,
   writeBrandFiles,
@@ -33,6 +35,9 @@ describe("brandFiles", () => {
       "public/brand/pools-wordmark.svg",
       "public/brand/pools-wordmark-on-light.svg",
       "public/brand/pools-icon.svg",
+      "public/brand/pools-banner.svg",
+      "public/brand/pools-banner-on-light.svg",
+      "public/brand/pools-banner.png",
       "public/brand/pools-palette.json",
       "src/app/icon.svg",
       "src/app/apple-icon.png",
@@ -49,15 +54,34 @@ describe("brandFiles", () => {
     expect(paths.at(-1)).toBe("app/opengraph-image.alt.txt");
   });
 
-  it("renders a 180×180 apple icon and a 1200×630 link preview", () => {
+  it("renders a 180×180 apple icon, a 1200×630 link preview and a 1280×320 banner", () => {
     const files = brandFiles(PRODUCTS.packs);
     const png = (name: string) => files.find((file) => file.path.endsWith(name))?.contents;
     const apple = png("apple-icon.png") as Uint8Array;
     const og = png("opengraph-image.png") as Uint8Array;
+    const banner = png("banner.png") as Uint8Array;
     expect([...apple.slice(0, 8)]).toEqual(PNG_SIGNATURE);
     expect(pngSize(apple)).toEqual({ width: 180, height: 180 });
     expect(pngSize(og)).toEqual({ width: 1200, height: 630 });
+    expect([...banner.slice(0, 8)]).toEqual(PNG_SIGNATURE);
+    expect(pngSize(banner)).toEqual({ width: 1280, height: 320 });
   });
+
+  it.each(
+    (Object.values(PRODUCTS) as Product[]).map((product) => [product.name, product] as const),
+  )(
+    "%s: writes the README banner as SVG for dark and light backgrounds, and as a PNG",
+    (name, product) => {
+      const files = brandFiles(product);
+      const file = (suffix: string) =>
+        files.find((f) => f.path === `public/brand/${name}${suffix}`);
+      expect(file("-banner.svg")?.contents).toBe(bannerSvg(product));
+      expect(file("-banner-on-light.svg")?.contents).toBe(
+        bannerSvg(product, { background: "light" }),
+      );
+      expect(file("-banner.png")?.contents).toEqual(svgToPng(bannerSvg(product), 1280));
+    },
+  );
 
   it("writes the palette and alt text", () => {
     const files = brandFiles(PRODUCTS.pools);
@@ -145,6 +169,10 @@ describe("writeBrandFiles", () => {
     const files = brandFiles(PRODUCTS.pools);
     const written = writeBrandFiles(files, root);
     expect(written).toEqual(files.map((file) => path.join(root, file.path)));
-    expect(readFileSync(path.join(root, "src/app/icon.svg"), "utf8")).toBe(files[4]?.contents);
+    const icon = files.find((file) => file.path === "src/app/icon.svg");
+    expect(readFileSync(path.join(root, "src/app/icon.svg"), "utf8")).toBe(icon?.contents);
+    expect(readFileSync(path.join(root, "public/brand/pools-banner.png"))).toEqual(
+      Buffer.from(files.find((file) => file.path.endsWith("-banner.png"))?.contents ?? ""),
+    );
   });
 });

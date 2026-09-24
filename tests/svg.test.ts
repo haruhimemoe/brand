@@ -2,7 +2,8 @@
  * @file tests/svg.test.ts
  * @desc The drawings: wordmark colors per background and its crop, the parent brand's stacked
  *       wordmark (".moe" right-aligned under "haruhime"), icons the same letter size across
- *       products and inside their canvas, the link preview's size and label.
+ *       products and inside their canvas, the link preview's size and label, and the README
+ *       banner's size, colors, centering and self-containment.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
@@ -10,6 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  bannerSvg,
   escapeXml,
   iconSvg,
   layoutText,
@@ -232,6 +234,108 @@ describe("ogSvg", () => {
   });
 });
 
+describe("bannerSvg", () => {
+  const dark = {};
+  const light = { background: "light" } as const;
+  // Every product on both backgrounds: [product name, background, product, options].
+  const cases = products.flatMap((product) => [
+    [product.name, "dark", product, dark] as const,
+    [product.name, "light", product, light] as const,
+  ]);
+  // The wordmark's ink and the tagline's (the last path), from control points.
+  const parts = (svg: string) => {
+    const tagline = svg.lastIndexOf("<path");
+    return {
+      wordmark: extent(inkPoints(svg.slice(0, tagline))),
+      tagline: extent(inkPoints(svg.slice(tagline))),
+    };
+  };
+
+  it.each([
+    // c1 is white for every hue (lightness 100), the page the on-light wordmark is drawn for.
+    ["dark", "b6", dark],
+    ["light", "c1", light],
+  ] as const)("%s: 1280×320 (4:1), rounded corners, on %s", (_, token, options) => {
+    const svg = bannerSvg(PRODUCTS.pools, options);
+    expect(svg).toContain('width="1280" height="320" viewBox="0 0 1280 320"');
+    expect(svg).toMatch(
+      new RegExp(`<rect width="1280" height="320" rx="\\d+" fill="${palette(200)[token]}"/>`),
+    );
+  });
+
+  it.each([
+    ["dark", dark, "c1", "h1", "c3"],
+    ["light", light, "b6", "h2", "b2"],
+  ] as const)(
+    "%s: the wordmark's colors, then the tagline muted",
+    (_, options, text, dot, tagline) => {
+      const colors = palette(PRODUCTS.pools.hue);
+      const svg = bannerSvg(PRODUCTS.pools, options);
+      expect(paths(svg).map(([fill]) => fill)).toEqual([colors[text], colors[tagline]]);
+      expect(svg).toMatch(new RegExp(`<circle [^>]+fill="${colors[dot]}"/>`));
+    },
+  );
+
+  it.each([
+    ["dark", dark, ["c1", "h1", "c1", "c3"]],
+    ["light", light, ["b6", "h2", "b6", "b2"]],
+  ] as const)("%s: the parent brand's stacked wordmark over its tagline", (_, options, tokens) => {
+    const colors = palette(PRODUCTS.haruhime.hue);
+    const svg = bannerSvg(PRODUCTS.haruhime, options);
+    expect(paths(svg).map(([fill]) => fill)).toEqual(tokens.map((token) => colors[token]));
+    expect(svg).not.toContain("<circle");
+    const [name, , letters] = paths(svg).map(([, points]) => extent(points));
+    if (!name || !letters) throw new Error("expected the name and the suffix");
+    expect(letters.y1).toBeGreaterThan(name.y2);
+    expect(Math.abs(letters.x2 - name.x2)).toBeLessThan(2);
+  });
+
+  it.each(cases)("%s on %s: outlined paths only, nothing external", (_, __, product, options) => {
+    const svg = bannerSvg(product, options);
+    for (const banned of ["<text", "<image", "<use", "<style", "<foreignObject", "href", "url("]) {
+      expect(svg).not.toContain(banned);
+    }
+    // The only URL is the SVG namespace.
+    expect(svg.match(/[a-z]+:\/\/[^"]*/g)).toEqual(["http://www.w3.org/2000/svg"]);
+  });
+
+  it("is labelled with the full name and the tagline, escaped", () => {
+    expect(bannerSvg(PRODUCTS.haruhime)).toContain(
+      'role="img" aria-label="haruhime.moe: osu! tools for tournament hosts"',
+    );
+    const svg = bannerSvg({ ...PRODUCTS.pools, tagline: `pools & "sheets" <3 'em` });
+    expect(svg).toContain('aria-label="pools: pools &#38; &#34;sheets&#34; &#60;3 &#39;em"');
+    expect(svg).not.toContain("<3");
+  });
+
+  it.each(cases)(
+    "%s on %s: centered, the tagline under the wordmark, even space above and below",
+    (_, __, product, options) => {
+      const { wordmark, tagline } = parts(bannerSvg(product, options));
+      // Control points can sit a hair outside the ink, so allow a little slack.
+      expect((wordmark.x1 + wordmark.x2) / 2).toBeCloseTo(640, -1);
+      expect((tagline.x1 + tagline.x2) / 2).toBeCloseTo(640, -1);
+      expect(tagline.y1).toBeGreaterThan(wordmark.y2);
+      expect(Math.abs(wordmark.y1 - (320 - tagline.y2))).toBeLessThan(4);
+      // Clear of the rounded corners and the edges.
+      expect(Math.min(wordmark.x1, tagline.x1)).toBeGreaterThan(64);
+      expect(Math.max(wordmark.x2, tagline.x2)).toBeLessThan(1216);
+      expect(wordmark.y1).toBeGreaterThan(40);
+      expect(tagline.y2).toBeLessThan(280);
+    },
+  );
+
+  it("draws every wordmark at one size, large enough to read when GitHub halves it", () => {
+    const radii = [PRODUCTS.packs, PRODUCTS.pools, PRODUCTS.sheets].map(
+      (product) => /<circle [^>]* r="([\d.]+)"/.exec(bannerSvg(product))?.[1],
+    );
+    expect(new Set(radii).size).toBe(1);
+    // A README shows it 640 to 830 wide; at 640 the name's letters are still 40px tall.
+    const [name] = paths(bannerSvg(PRODUCTS.haruhime)).map(([, points]) => extent(points));
+    expect(((name?.y2 ?? 0) - (name?.y1 ?? 0)) / 2).toBeGreaterThanOrEqual(40);
+  });
+});
+
 describe("snapshots", () => {
   // Any visual change shows up here as a diff to review (and a dependency bump can't drift).
   it.each(products.map((product) => [product.name, product] as const))(
@@ -243,6 +347,10 @@ describe("snapshots", () => {
       );
       await expect(iconSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-icon.svg`);
       await expect(ogSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-og.svg`);
+      await expect(bannerSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-banner.svg`);
+      await expect(bannerSvg(product, { background: "light" })).toMatchFileSnapshot(
+        `__snapshots__/${name}-banner-on-light.svg`,
+      );
     },
   );
 });

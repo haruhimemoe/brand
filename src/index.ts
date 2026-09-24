@@ -20,6 +20,8 @@ export { svgToPng } from "./png.js";
 export { previewHtml } from "./preview.js";
 export { isProductKey, PRODUCTS, type Product, type ProductKey } from "./products.js";
 export {
+  type BannerOptions,
+  bannerSvg,
   escapeXml,
   type IconOptions,
   iconSvg,

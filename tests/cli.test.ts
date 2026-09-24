@@ -1,6 +1,7 @@
 /**
  * @file tests/cli.test.ts
- * @desc The haruhime-brand command through `run`: list, write, dry run, preview, help and errors.
+ * @desc The haruhime-brand command through `run`: list, write, dry run, preview (banners
+ *       included), help and errors.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Wed Sep 23, 2026
@@ -45,8 +46,9 @@ describe("haruhime-brand", () => {
   it("writes a product's files into the app", () => {
     app();
     expect(cli("pools")).toBe(0);
-    expect(out).toHaveLength(8);
+    expect(out).toHaveLength(11);
     expect(existsSync(path.join(cwd, "public/brand/pools-wordmark.svg"))).toBe(true);
+    expect(existsSync(path.join(cwd, "public/brand/pools-banner.png"))).toBe(true);
     expect(existsSync(path.join(cwd, "src/app/opengraph-image.png"))).toBe(true);
   });
 
@@ -158,6 +160,9 @@ describe("haruhime-brand", () => {
         "public/brand/haruhime-wordmark.svg",
         "public/brand/haruhime-wordmark-on-light.svg",
         "public/brand/haruhime-icon.svg",
+        "public/brand/haruhime-banner.svg",
+        "public/brand/haruhime-banner-on-light.svg",
+        "public/brand/haruhime-banner.png",
         "public/brand/haruhime-palette.json",
         "src/app/icon.svg",
         "src/app/apple-icon.png",
@@ -175,11 +180,14 @@ describe("haruhime-brand", () => {
     expect(existsSync(path.join(cwd, "public"))).toBe(false);
   });
 
-  it("writes a preview page", () => {
+  it("writes a preview page with every product's banners", () => {
     expect(cli("preview", "--out", "look")).toBe(0);
     const html = readFileSync(path.join(cwd, "look/index.html"), "utf8");
-    for (const name of ["haruhime", "packs", "pools", "sheets"])
+    for (const name of ["haruhime", "packs", "pools", "sheets"]) {
       expect(html).toContain(`<h2>${name} `);
+      expect(html).toContain(`alt="${name} banner"`);
+      expect(html).toContain(`alt="${name} banner on light"`);
+    }
   });
 
   it("prints usage for --help", () => {
