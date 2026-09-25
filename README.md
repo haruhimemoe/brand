@@ -1,3 +1,5 @@
+<p align="center"><a href="https://github.com/haruhimemoe/brand"><picture><source media="(prefers-color-scheme: light)" srcset="https://www.haruhime.moe/brand/repos/brand-banner-on-light.svg"><img alt="@haruhimemoe/brand" src="https://www.haruhime.moe/brand/repos/brand-banner.svg" width="640"></picture></a></p>
+
 # @haruhimemoe/brand
 
 The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), generated from one table:
@@ -9,7 +11,7 @@ The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), genera
 | pools | `pl.` | 200 (blue) |
 | sheets | `sh.` | 150 (green) |
 
-- **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which packs.haruhime.moe imports: there, an app sets `--hue` and the CSS does the rest.
+- **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which haruhime.moe, packs.haruhime.moe and pools.haruhime.moe import: there, an app sets `--hue` and the CSS does the rest.
 - **Wordmark:** the name in Nunito ExtraBold plus a dot in the highlight color (the deeper `h2` on light backgrounds, where `h1` is too pale), outlined to SVG paths.
 - **Stacked wordmark:** a product with a `suffix` (only haruhime, with `.moe`) drops the round dot. The suffix goes on a second line at half size, right-aligned to the end of the name, with its own dot in the highlight color and its letters in the text color.
 - **Icon:** the one- or two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.

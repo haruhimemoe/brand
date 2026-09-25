@@ -31,6 +31,7 @@
 - [haruhime.moe brand page](https://www.haruhime.moe/brand): the name, logos, colors and the packs/pools/sheets icons, as shown on the site
 - [haruhime.moe llms.txt](https://www.haruhime.moe/llms.txt): the site's own llms.txt, with every tool
 - [packs.haruhime.moe](https://packs.haruhime.moe): osu! beatmap packs for tournament hosts, one of the products
+- [pools.haruhime.moe](https://pools.haruhime.moe): past osu! tournament mappools and their maps, one of the products. In beta.
 - [@haruhimemoe/ui](https://github.com/haruhimemoe/ui): the shared React components and theme for the haruhime.moe tools, built on the same palette tokens
 
 ## Optional
