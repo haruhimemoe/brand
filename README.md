@@ -264,4 +264,4 @@ MIT. Nunito (in `fonts/`) is under the SIL Open Font License 1.1; see [LICENSE](
 
 ---
 
-See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) to contribute. Report security issues as [SECURITY.md](SECURITY.md) describes.
+See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) to contribute. Report security issues as [SECURITY.md](SECURITY.md) describes. Bring questions and feedback to the haruhime.moe [Discord server](https://discord.gg/bKy9kjMV4y).
