@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in @haruhimemoe/brand is broken or drawn wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you ran or called, what you expected, what happened instead. For a drawing, attach the file or a screenshot.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Command or code to reproduce
+      render: sh
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: "0.4.0"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Node version and platform
+      description: The PNG renderer is a native binary, so the OS and CPU matter.
+      placeholder: Node 24.1 on macOS arm64
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: What the CLI printed, or the error and stack trace.
+      render: text
