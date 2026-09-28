@@ -5,7 +5,7 @@
  *       want palette() or PRODUCTS never need the native binary (AGENTS.md: "resvg stays lazy").
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Thu Sep 24, 2026
  */
 
 import { createRequire } from "node:module";

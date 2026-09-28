@@ -350,7 +350,7 @@ describe("snapshots", () => {
     async (name, product) => {
       await expect(wordmarkSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-wordmark.svg`);
       await expect(wordmarkSvg(product, { background: "light" })).toMatchFileSnapshot(
-        `__snapshots__/${name}-wordmark-dark.svg`,
+        `__snapshots__/${name}-wordmark-on-light.svg`,
       );
       await expect(iconSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-icon.svg`);
       await expect(ogSvg(product)).toMatchFileSnapshot(`__snapshots__/${name}-og.svg`);

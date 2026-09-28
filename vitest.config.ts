@@ -1,9 +1,11 @@
 /**
  * @file vitest.config.ts
- * @desc Vitest config: every test under tests/, v8 coverage with a 90% floor on src/ (the CLI entry is tested as a process).
+ * @desc Vitest config: every test under tests/, v8 coverage with a 90% floor on src/. The lines
+ *       at the end of src/cli.ts that run it as a program are left to scripts/smoke.mjs
+ *       (`bun run test:dist`), which runs the built bin; tests call `run` directly.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { defineConfig } from "vitest/config";
