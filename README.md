@@ -112,6 +112,8 @@ Next.js serves `public/` from the site root, so once an app has deployed its bra
 
 Without the link, clicking the banner opens the image instead of the site. Swap `haruhime` for the product and its site. The banner scales to the README's width, usually 640 to 830 pixels on GitHub, and the wordmark stays readable there.
 
+Library repos like this one aren't products, so they have no brand files of their own. Their banners live on haruhime.moe under `/brand/repos/` (this README's is `https://www.haruhime.moe/brand/repos/brand-banner.svg`). The haruhime.moe repo's `bun run repo-banners` draws them with `bannerSvg`, from a stand-in product: the repo's name in the parent brand's hue over the repo's own tagline. To add a banner for a new package, add the repo there, not here.
+
 ### Moving an app over
 
 If the app directory already makes an icon or link preview another way (`apple-icon.tsx`, `opengraph-image.tsx`, `icon.png`, `twitter-image.jpg`, the `favicon.ico` create-next-app ships, …), Next.js would serve both, so the CLI stops and lists them. Delete them, since the generated files replace them, then run it again. `--force` writes anyway.
