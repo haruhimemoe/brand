@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `@haruhimemoe/brand/palette`: `palette`, `TOKENS`, `hslToHex` and the `Palette` and `Token` types as their own entry, which imports nothing (no fonts, file system or PNG renderer), so browsers and edge runtimes can use it. Apps that copied `hslToHex` for a brand page can import it from here.
+
 ### Fixed
 
 - `haruhime-brand <product>` and `metadataConflicts` treat a `favicon.ico` in the app directory (create-next-app ships one with the Next.js logo) as a conflict. Before, Next.js went on serving it next to the generated `icon.svg`.

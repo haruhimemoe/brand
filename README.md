@@ -11,7 +11,7 @@ The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), genera
 | pools | `pl.` | 200 (blue) |
 | sheets | `sh.` | 150 (green) |
 
-- **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which haruhime.moe, packs.haruhime.moe and pools.haruhime.moe import: there, an app sets `--hue` and the CSS does the rest.
+- **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). The palette alone is also a browser-safe entry, `@haruhimemoe/brand/palette`. This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which haruhime.moe, packs.haruhime.moe and pools.haruhime.moe import: there, an app sets `--hue` and the CSS does the rest.
 - **Wordmark:** the name in Nunito ExtraBold plus a dot in the highlight color (the deeper `h2` on light backgrounds, where `h1` is too pale), outlined to SVG paths.
 - **Stacked wordmark:** a product with a `suffix` (only haruhime, with `.moe`) drops the round dot. The suffix goes on a second line at half size, right-aligned to the end of the name, with its own dot in the highlight color and its letters in the text color.
 - **Icon:** the one- or two-letter mark plus the dot. Every product uses the same letter size, so the icons match as a family.
@@ -26,7 +26,7 @@ All text is outlined, so the SVGs need no fonts, and the PNGs come out the same 
 bun add -d @haruhimemoe/brand
 ```
 
-With npm: `npm install --save-dev @haruhimemoe/brand`. It needs Node 22.12 or later (see [Compatibility](#compatibility)).
+With npm: `npm install --save-dev @haruhimemoe/brand`. It needs Node 22.12 or later (see [Compatibility](#compatibility)). An app that uses [`@haruhimemoe/brand/palette`](#palette) at runtime (in a page, not a build script) installs it as a regular dependency instead.
 
 ## CLI
 
@@ -196,6 +196,15 @@ A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:
 | `TOKENS` | `{ readonly b1: readonly [10, 40]; readonly b2: readonly [10, 30]; … }` (a `const` object, a literal tuple per token) | The recipe: each token's saturation and lightness in percent. `b1` to `b6` are `[10, 40]`, `[10, 30]`, `[10, 25]`, `[10, 20]`, `[10, 15]` and `[10, 10]`; `c1` to `c4` are `[40, 100]` (white), `[40, 90]`, `[40, 80]` and `[40, 70]`; `h1` is `[100, 70]` and `h2` is `[50, 45]`. |
 | `hslToHex` | `(h: number, s: number, l: number) => string` | `"#rrggbb"` for a hue in degrees and a saturation and lightness 0 to 100, the way browsers resolve `hsl()`: any hue angle works (`-75` is `285`), saturation and lightness outside 0 to 100 are clamped, and each channel is rounded. |
 
+The palette is also its own entry, `@haruhimemoe/brand/palette`, with `palette`, `TOKENS`, `hslToHex` and the `Palette` and `Token` types. It imports nothing (no fonts, no file system, no PNG renderer), so it's safe in a browser bundle or an edge runtime, like a brand page that shows swatches:
+
+```ts
+import { hslToHex, palette } from "@haruhimemoe/brand/palette";
+
+palette(200).h1; // "#66ccff"
+hslToHex(200, 100, 70); // "#66ccff"
+```
+
 ### Drawings
 
 Each drawing is a complete SVG document as a string, with `role="img"` and an `aria-label`: the full name for the wordmark and icon (`pools`, `haruhime.moe`), and the full name and tagline for the link preview and banner.
@@ -261,7 +270,7 @@ Node 22.12 or later. The package is ES modules with TypeScript types.
 
 The CLI writes Next.js App Router metadata files (`icon.svg`, `apple-icon.png`, `opengraph-image.png`), so it's for Next.js apps. The API works in any Node program.
 
-This is a build-time tool: run it in Node, at build or from a script. Never import it into a browser bundle or an edge runtime.
+This is a build-time tool: run it in Node, at build or from a script. Never import `@haruhimemoe/brand` into a browser bundle or an edge runtime. The one exception is `@haruhimemoe/brand/palette`, which imports nothing and runs anywhere.
 
 ## License
 

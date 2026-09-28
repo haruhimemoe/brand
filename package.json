@@ -31,6 +31,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./palette": {
+      "types": "./dist/palette.d.ts",
+      "default": "./dist/palette.js"
+    },
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",

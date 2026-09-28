@@ -1,6 +1,6 @@
 # @haruhimemoe/brand
 
-> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is a build-time Node tool (Node 22.12 or later, ES modules with types): apps install it as a dev dependency and commit what it writes.
+> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is a build-time Node tool (Node 22.12 or later, ES modules with types): apps install it as a dev dependency and commit what it writes. The one runtime-safe part is `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`), which imports nothing and works in browsers and edge runtimes.
 
 ## Docs
 
@@ -12,7 +12,7 @@
 - [README banner](https://github.com/haruhimemoe/brand#readme-banner): the `<picture>` snippet for a theme-aware, linked banner at the top of a GitHub README
 - [Moving an app over](https://github.com/haruhimemoe/brand#moving-an-app-over): when the CLI stops on existing icon or link-preview files, and `--force`
 - [API](https://github.com/haruhimemoe/brand#api): examples, then every export with its signature
-- [Palette](https://github.com/haruhimemoe/brand#palette): `palette`, `TOKENS` and `hslToHex`
+- [Palette](https://github.com/haruhimemoe/brand#palette): `palette`, `TOKENS` and `hslToHex`, also as the browser-safe `@haruhimemoe/brand/palette` entry
 - [Drawings](https://github.com/haruhimemoe/brand#drawings): `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`, `svgToPng` and `escapeXml`
 - [App files](https://github.com/haruhimemoe/brand#app-files): `brandFiles`, `metadataConflicts`, `writeBrandFiles` and `previewHtml`
 - [Text](https://github.com/haruhimemoe/brand#text): `layoutText`, its options and result

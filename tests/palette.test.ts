@@ -2,13 +2,16 @@
  * @file tests/palette.test.ts
  * @desc The palette recipe: packs.haruhime.moe's shipped colors at hue 333, and hslToHex the
  *       way browsers resolve hsl(): rounding, any hue angle, clamped saturation and lightness.
+ *       And the @haruhimemoe/brand/palette entry: exactly these exports, and no imports.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
  * @modified Mon Sep 28, 2026
  */
 
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { hslToHex, palette, TOKENS } from "../src/index.js";
+import * as paletteEntry from "../src/palette.js";
 
 describe("palette", () => {
   it("matches packs.haruhime.moe's brand colors at hue 333", () => {
@@ -66,5 +69,17 @@ describe("palette", () => {
 
   it.each([-1, 360, 1.5, Number.NaN])("rejects a hue outside 0 to 359 (%j)", (hue) => {
     expect(() => palette(hue)).toThrow(RangeError);
+  });
+});
+
+describe("the @haruhimemoe/brand/palette entry", () => {
+  it("exports the palette and nothing else", () => {
+    expect(Object.keys(paletteEntry).sort()).toEqual(["TOKENS", "hslToHex", "palette"]);
+  });
+
+  // Browser-safe: an import here could pull the fonts, node:fs or resvg into an app's bundle.
+  it("imports nothing", () => {
+    const source = readFileSync(new URL("../src/palette.ts", import.meta.url), "utf8");
+    expect(source).not.toMatch(/^\s*(import|export .* from)\b/m);
   });
 });
