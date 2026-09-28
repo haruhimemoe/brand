@@ -6,7 +6,7 @@
  *       text). Static files, so nothing renders per request.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
@@ -76,9 +76,12 @@ export const brandFiles = (product: Product, options: BrandFileOptions = {}): Br
 };
 
 // Next.js metadata files by name: icon, apple-icon, opengraph-image, twitter-image, optionally
-// numbered, as images or as code that renders one.
+// numbered, as images or as code that renders one; and favicon.ico, which create-next-app ships
+// (with the Next.js logo) and browsers ask for directly.
 const METADATA_FILE =
   /^(icon|apple-icon|opengraph-image|twitter-image)\d*\.(ico|png|jpe?g|gif|svg|tsx?|jsx?)$/;
+const isMetadataFile = (name: string): boolean =>
+  name === "favicon.ico" || METADATA_FILE.test(name);
 
 /**
  * @function metadataConflicts
@@ -87,7 +90,7 @@ const METADATA_FILE =
  * @param files {BrandFile[]} what's about to be written
  * @returns {string[]} files in appDir that this write shouldn't silently touch: metadata files
  *          these files don't replace by name (e.g. an apple-icon.tsx next to the apple-icon.png
- *          being added, so Next.js would serve both), plus, on a first run for this product (no
+ *          being added, so Next.js would serve both, or a favicon.ico next to icon.svg), plus, on a first run for this product (no
  *          public/brand/<name>-palette.json yet), any same-name file already there (it hasn't
  *          been through this CLI before, so it may be hand-made)
  */
@@ -104,7 +107,7 @@ export const metadataConflicts = (
   return readdirSync(dir)
     .filter((name) => {
       const target = path.join(dir, name);
-      return writing.has(target) ? firstRun : METADATA_FILE.test(name);
+      return writing.has(target) ? firstRun : isMetadataFile(name);
     })
     .sort()
     .map((name) => path.join(appDir, name));

@@ -86,12 +86,14 @@ For each file it prints `wrote <path>`, or `replaced <path>` when the file was a
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `--root <dir>` | `.` | The app's root folder, resolved from where you run the command. The other paths resolve against it. |
-| `--public <dir>` | `public` | The app's static folder. It must resolve inside `--root`. |
+| `--public <dir>` | `public` | The app's static folder. It must resolve inside `--root`, symlinks followed (see below). |
 | `--app <dir>` | `src/app` if it exists, else `app` | The Next.js app directory. It must exist and resolve inside `--root`. With no `--app` and neither folder there, the command stops. |
 | `--dry-run` | off | Prints the absolute path of every file it would write, with ` (exists)` after the ones already there, and writes nothing. |
-| `--force` | off | Writes even when the app directory has icon or link-preview files in the way (see [Moving an app over](#moving-an-app-over)). |
+| `--force` | off | Writes even when the app directory has icon or link-preview files in the way (see [Moving an app over](#moving-an-app-over)), or a symlink leads outside `--root`. |
 
 `preview` takes only `--out`. `list` and `help` take no options. Any other option is an error.
+
+The CLI also follows symlinks before it writes: if `public`, `public/brand`, the app directory or a file in them is a symlink that leads outside `--root` (or a dangling one, which leads nowhere it can check), it lists the paths and stops, even on `--dry-run`. Point `--root` at the real folder, or pass `--force`. A symlink that stays inside `--root` is fine.
 
 `--help` (or `-h`) and `--version` work with any command, or none. They're checked as soon as the options parse, so `list --help` prints the usage and `nope --version` prints the version, both exiting 0, even though the command alone would fail. With both, `--help` wins. An option that doesn't parse (unknown, missing its value, or a flag given one) still fails first: `pools --bogus --help` exits 1.
 
@@ -112,7 +114,7 @@ Without the link, clicking the banner opens the image instead of the site. Swap 
 
 ### Moving an app over
 
-If the app directory already makes an icon or link preview another way (`apple-icon.tsx`, `opengraph-image.tsx`, `icon.png`, `twitter-image.jpg`, …), Next.js would serve both, so the CLI stops and lists them. Delete them, since the generated files replace them, then run it again. `--force` writes anyway.
+If the app directory already makes an icon or link preview another way (`apple-icon.tsx`, `opengraph-image.tsx`, `icon.png`, `twitter-image.jpg`, the `favicon.ico` create-next-app ships, …), Next.js would serve both, so the CLI stops and lists them. Delete them, since the generated files replace them, then run it again. `--force` writes anyway.
 
 The first time a product is written into an app, a hand-made `icon.svg`, `apple-icon.png`, `opengraph-image.png` or its `.alt.txt` already sitting in the app directory is also treated as a conflict (it hasn't been through this CLI before, so it isn't safe to overwrite silently) and needs `--force` too. Once the product's `public/brand/<name>-palette.json` exists, later reruns replace those same files without `--force`, as before.
 
@@ -210,7 +212,7 @@ Each drawing is a complete SVG document as a string, with `role="img"` and an `a
 | Export | Signature | What it is |
 | --- | --- | --- |
 | `brandFiles` | `(product: Product, options?: BrandFileOptions) => BrandFile[]` | The 11 files the CLI writes, in the order of [Files it writes](#files-it-writes), with paths relative to the app's root. `options` is `{ publicDir?, appDir? }`, default `"public"` and `"src/app"` (it doesn't look for `app/`; the CLI does). A `BrandFile` is `{ path: string; contents: string \| Uint8Array }`: a string for SVG, JSON and text, bytes for PNG. |
-| `metadataConflicts` | `(root: string, appDir: string, files: readonly BrandFile[]) => string[]` | The files in `appDir` that writing `files` shouldn't silently touch, as `appDir/<file>`, sorted. That's every Next.js metadata file there (`icon`, `apple-icon`, `opengraph-image` or `twitter-image`, optionally numbered, as `.ico`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.js`, `.jsx`, `.ts` or `.tsx`) that `files` doesn't replace by name, plus, while the product's `<name>-palette.json` doesn't exist yet, the ones it would overwrite. Empty when `appDir` doesn't exist. |
+| `metadataConflicts` | `(root: string, appDir: string, files: readonly BrandFile[]) => string[]` | The files in `appDir` that writing `files` shouldn't silently touch, as `appDir/<file>`, sorted. That's every Next.js metadata file there (`icon`, `apple-icon`, `opengraph-image` or `twitter-image`, optionally numbered, as `.ico`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.js`, `.jsx`, `.ts` or `.tsx`, and `favicon.ico`) that `files` doesn't replace by name, plus, while the product's `<name>-palette.json` doesn't exist yet, the ones it would overwrite. Empty when `appDir` doesn't exist. |
 | `writeBrandFiles` | `(files: readonly BrandFile[], root: string) => string[]` | Writes each file under `root`, creating folders and overwriting what's there, and returns the absolute paths. It doesn't check for conflicts. |
 | `previewHtml` | `(products: readonly Product[]) => string` | The preview page as one HTML document, with its images inlined. |
 
@@ -243,7 +245,7 @@ A `TextRun` is `{ d, end, ink, line }`: `d` is the path data for every glyph, `e
   - an option it doesn't know, `--root`, `--public`, `--app` or `--out` without a value, or `--dry-run`, `--force`, `--help` or `--version` given one (`--force=1`);
   - an option the command doesn't take, like `preview --force` or `pools --out x`;
   - an unknown product;
-  - `--app` or `--public` resolving outside `--root`;
+  - `--app` or `--public` resolving outside `--root`, or, without `--force`, a symlink that would take a write outside it;
   - no app directory: neither `src/app` nor `app` under `--root`, or an `--app` that doesn't exist;
   - icon or link-preview files in the way, without `--force` (see [Moving an app over](#moving-an-app-over)).
 - Anything else that goes wrong on disk, like a folder the CLI can't write to, or an `--app`, `--public` or `--out` path that is a file, throws. The CLI exits 1 and Node prints the error (`EACCES`, `ENOTDIR`, `EEXIST`) with a stack trace, not a one-line message. Files written before a failed write stay.

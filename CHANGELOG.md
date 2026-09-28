@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- `haruhime-brand <product>` and `metadataConflicts` treat a `favicon.ico` in the app directory (create-next-app ships one with the Next.js logo) as a conflict. Before, Next.js went on serving it next to the generated `icon.svg`.
+- `haruhime-brand constructor` (or `toString`, or any other name `Object` has) exits 1 with "Unknown product" instead of crashing with a `TypeError`.
+- `--public` or `--app` pointing at a folder whose name starts with two dots (`..cache`) is no longer refused as outside `--root`.
+
+### Security
+
+- The CLI checks where each write really lands, symlinks followed, and stops when a symlinked `public`, app directory or file would take it outside `--root` (or is dangling), unless `--force`. Before, it wrote through the symlink.
+
 ## [0.3.0] - 2026-09-23
 
 ### Added

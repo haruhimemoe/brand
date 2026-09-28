@@ -6,10 +6,17 @@
  *       tests call it directly; the bottom lines run it when this file is the program.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
-import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -22,8 +29,9 @@ export const USAGE = `Usage:
       Write the product's brand files into a Next.js app. Defaults: --root . --public public,
       --app src/app or app (whichever exists; an explicit --app must exist too). --app and
       --public must resolve inside --root. Refuses when the app directory already has
-      icon/apple-icon/opengraph-image files it wouldn't replace (Next would serve both, or, on
-      the product's first run, a hand-made file), unless --force.
+      icon/apple-icon/opengraph-image/favicon.ico files it wouldn't replace (Next would serve
+      both, or, on the product's first run, a hand-made file), or when a symlink would take a
+      write outside --root, unless --force.
   haruhime-brand preview [--out <dir>]
       Write <dir>/index.html (default: preview) showing every product.
   haruhime-brand list
@@ -35,8 +43,7 @@ export const USAGE = `Usage:
 
 export type Io = { cwd: string; out: (line: string) => void; err: (line: string) => void };
 
-// Options each command accepts, beyond the global --help/--version. Anything else is rejected
-// (e.g. `preview --root x`, `pools --out x`, `list --force` all ignored options silently before).
+// Options each command accepts, beyond the global --help/--version. Anything else is rejected.
 const COMMAND_OPTIONS: Record<string, readonly string[]> = {
   list: [],
   help: [],
@@ -55,13 +62,30 @@ const packageVersion = (): string => {
   return pkg.version;
 };
 
+// True when `target` (absolute) is `root` or under it. A folder named "..cache" is inside.
+const isInside = (root: string, target: string): boolean => {
+  const rel = path.relative(root, target);
+  return rel !== ".." && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
+};
+
 // Throws when `target`, resolved against `root`, would land outside it (an absolute path
 // elsewhere, or a "../" that escapes --root).
 const requireInsideRoot = (root: string, target: string, flag: string): void => {
-  const resolved = path.resolve(root, target);
-  const rel = path.relative(root, resolved);
-  if (rel.startsWith("..") || path.isAbsolute(rel)) {
+  if (!isInside(root, path.resolve(root, target))) {
     throw new RangeError(`${flag} must resolve inside --root (got ${target}).`);
+  }
+};
+
+// Where a write to `target` really lands once symlinks are followed: its deepest existing path
+// (a symlink counts, even a dangling one), resolved, plus the part still to be created. null when
+// that path is a dangling symlink, whose destination can't be known.
+const realTarget = (target: string): string | null => {
+  let existing = target;
+  while (!lstatSync(existing, { throwIfNoEntry: false })) existing = path.dirname(existing);
+  try {
+    return path.join(realpathSync(existing), path.relative(existing, target));
+  } catch {
+    return null;
   }
 };
 
@@ -69,7 +93,7 @@ const requireInsideRoot = (root: string, target: string, flag: string): void => 
  * @function run
  * @param args {string[]} the arguments after the program name
  * @param io {Io} working directory and output lines
- * @returns {number} the exit code: 0 done, 1 bad usage
+ * @returns {number} the exit code: 0 done (or --help, --version), 1 on any error it reports
  */
 export const run = (args: readonly string[], io: Io): number => {
   let parsed: ReturnType<typeof parse>;
@@ -93,7 +117,12 @@ export const run = (args: readonly string[], io: Io): number => {
     io.err(USAGE);
     return 1;
   }
-  const allowed = COMMAND_OPTIONS[command] ?? (isProductKey(command) ? PRODUCT_OPTIONS : null);
+  // Own keys only: "constructor" or "toString" must be an unknown product, not Object's methods.
+  const allowed = Object.hasOwn(COMMAND_OPTIONS, command)
+    ? COMMAND_OPTIONS[command]
+    : isProductKey(command)
+      ? PRODUCT_OPTIONS
+      : null;
   if (allowed) {
     const bad = Object.keys(values).find((key) => !allowed.includes(key));
     if (bad) {
@@ -155,6 +184,22 @@ export const run = (args: readonly string[], io: Io): number => {
     return 1;
   }
   const targets = files.map((file) => path.resolve(root, file.path));
+  // --app and --public were checked as text; a symlink on the way could still lead out of --root.
+  const realRoot = realpathSync(root);
+  const escaping = targets.filter((target) => {
+    const real = realTarget(target);
+    return real === null || !isInside(realRoot, real);
+  });
+  if (escaping.length > 0 && !values.force) {
+    io.err(
+      [
+        "A symlink would take these writes outside --root:",
+        ...escaping.map((target) => `  ${target}`),
+        "Point --root at the real folder, or pass --force to write anyway.",
+      ].join("\n"),
+    );
+    return 1;
+  }
   if (values["dry-run"]) {
     for (const target of targets) io.out(existsSync(target) ? `${target} (exists)` : target);
     return 0;

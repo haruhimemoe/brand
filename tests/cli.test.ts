@@ -1,13 +1,21 @@
 /**
  * @file tests/cli.test.ts
  * @desc The haruhime-brand command through `run`: list, write, dry run, preview (banners
- *       included), help and errors.
+ *       included), help and errors, and staying inside --root (symlinks included).
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -73,6 +81,13 @@ describe("haruhime-brand", () => {
     expect(message).toContain(path.join("src", "app", "apple-icon.tsx"));
     expect(message).toContain(path.join("src", "app", "opengraph-image.tsx"));
     expect(message).toContain("--force");
+    expect(existsSync(path.join(cwd, "public"))).toBe(false);
+  });
+
+  it("treats create-next-app's favicon.ico as a second icon", () => {
+    touch("src/app/favicon.ico");
+    expect(cli("pools")).toBe(1);
+    expect(err.join("\n")).toContain(path.join("src", "app", "favicon.ico"));
     expect(existsSync(path.join(cwd, "public"))).toBe(false);
   });
 
@@ -215,8 +230,52 @@ describe("haruhime-brand", () => {
     [["pools", "--out", "x"], "--out"],
     [["list", "--force"], "--force"],
     [["list", "--out", "x"], "--out"],
+    [["constructor", "--force"], 'Unknown product "constructor"'],
+    [["toString", "--root", "x"], 'Unknown product "toString"'],
   ])("fails with exit 1 for %j", (args, message) => {
     expect(cli(...args)).toBe(1);
     expect(err.join("\n")).toContain(message);
+  });
+});
+
+describe("staying inside --root", () => {
+  let outside = "";
+  beforeEach(() => {
+    outside = mkdtempSync(path.join(tmpdir(), "brand-outside-"));
+    mkdirSync(path.join(cwd, "src/app"), { recursive: true });
+  });
+  afterEach(() => rmSync(outside, { recursive: true, force: true }));
+
+  it("refuses to write through a symlink that leads outside --root", () => {
+    symlinkSync(outside, path.join(cwd, "public"));
+    expect(cli("pools")).toBe(1);
+    expect(err.join("\n")).toContain("outside --root");
+    expect(err.join("\n")).toContain(path.join(cwd, "public/brand/pools-icon.svg"));
+    expect(existsSync(path.join(outside, "brand"))).toBe(false);
+  });
+
+  it("refuses a dangling symlink, whose destination it can't check", () => {
+    symlinkSync(path.join(outside, "gone"), path.join(cwd, "public"));
+    expect(cli("pools", "--dry-run")).toBe(1);
+    expect(err.join("\n")).toContain("outside --root");
+  });
+
+  it("writes through the symlink with --force", () => {
+    symlinkSync(outside, path.join(cwd, "public"));
+    expect(cli("pools", "--force")).toBe(0);
+    expect(existsSync(path.join(outside, "brand/pools-icon.svg"))).toBe(true);
+  });
+
+  it("follows a symlink that stays inside --root", () => {
+    mkdirSync(path.join(cwd, "static"));
+    symlinkSync(path.join(cwd, "static"), path.join(cwd, "public"));
+    expect(cli("pools")).toBe(0);
+    expect(existsSync(path.join(cwd, "static/brand/pools-icon.svg"))).toBe(true);
+  });
+
+  it("takes a folder whose name starts with two dots", () => {
+    mkdirSync(path.join(cwd, "..cache"));
+    expect(cli("pools", "--public", "..cache")).toBe(0);
+    expect(existsSync(path.join(cwd, "..cache/brand/pools-icon.svg"))).toBe(true);
   });
 });
