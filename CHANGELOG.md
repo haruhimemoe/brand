@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-28
+
+### Added
+
+- The `bb` product (`bb.`, hue 265, violet) for bb.haruhime.moe, the osu! BBCode editor: `haruhime-brand bb` writes its files.
+
+### Changed
+
+- haruhime's tagline is now "osu! tools for players, mappers and hosts" (it was "osu! tools for tournament hosts"), since the tools now reach past tournaments. Its link preview and banner change; rerun `haruhime-brand haruhime` to pick it up.
+
 ## [0.4.0] - 2026-09-28
 
 ### Added
@@ -48,7 +58,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `wordmarkSvg`, `iconSvg` and `ogSvg`, outlined in Nunito so they need no fonts, and `svgToPng`, which loads the native renderer only when called.
 - The `haruhime-brand` CLI: writes an app's wordmarks, icons, link preview and palette into `public/` and the Next.js app directory, lists products, and writes a preview page. It refuses to write outside `--root` or next to existing icon or preview code unless `--force`.
 
-[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/haruhimemoe/brand/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/haruhimemoe/brand/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/haruhimemoe/brand/compare/e4fcfcca308d858295fb6b51d19d339727950e0f...v0.3.0
 [0.2.0]: https://github.com/haruhimemoe/brand/compare/d520f6b22e54d860451b02a7da2926949f40737d...e4fcfcca308d858295fb6b51d19d339727950e0f

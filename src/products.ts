@@ -32,7 +32,7 @@ export const PRODUCTS = {
     mark: "h",
     suffix: ".moe",
     hue: 333,
-    tagline: "osu! tools for tournament hosts",
+    tagline: "osu! tools for players, mappers and hosts",
     url: "https://haruhime.moe",
   },
   packs: {
@@ -48,6 +48,13 @@ export const PRODUCTS = {
     hue: 200,
     tagline: "osu! mappools for tournament hosts",
     url: "https://pools.haruhime.moe",
+  },
+  bb: {
+    name: "bb",
+    mark: "bb",
+    hue: 265,
+    tagline: "osu! BBCode editor and templates",
+    url: "https://bb.haruhime.moe",
   },
   sheets: {
     name: "sheets",

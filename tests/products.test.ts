@@ -34,7 +34,7 @@ describe("PRODUCTS", () => {
       mark: "h",
       suffix: ".moe",
       hue: 333,
-      tagline: "osu! tools for tournament hosts",
+      tagline: "osu! tools for players, mappers and hosts",
       url: "https://haruhime.moe",
     });
   });

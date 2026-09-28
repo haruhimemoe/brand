@@ -4,7 +4,7 @@
 
 ## Layout
 
-- `src/products.ts`: `PRODUCTS` (the parent site haruhime, and the tools packs, pools and sheets), the `Product` type, `isProductKey`, and the internal `fullName` (name plus suffix, for labels).
+- `src/products.ts`: `PRODUCTS` (the parent site haruhime, and the tools packs, pools, bb and sheets), the `Product` type, `isProductKey`, and the internal `fullName` (name plus suffix, for labels).
 - `src/palette.ts`: `TOKENS`, `palette(hue)` and `hslToHex`. Also the `@haruhimemoe/brand/palette` entry (the exports map points at `dist/palette.js` directly), so it imports nothing.
 - `src/fonts.ts`: loads `fonts/nunito-400.ttf` and `fonts/nunito-800.ttf` once per weight, by a path relative to the module, so it works from `src/` and `dist/`.
 - `src/text.ts`: `layoutText` (glyphs to SVG path data with kerning, and the exact ink box), and the internal `num` (coordinate formatting) and `union` (two ink boxes combined).

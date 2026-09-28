@@ -210,7 +210,7 @@ describe("ogSvg", () => {
   it("stacks the parent brand's wordmark over its tagline", () => {
     const svg = ogSvg(PRODUCTS.haruhime);
     const colors = palette(PRODUCTS.haruhime.hue);
-    expect(svg).toContain('aria-label="haruhime.moe: osu! tools for tournament hosts"');
+    expect(svg).toContain('aria-label="haruhime.moe: osu! tools for players, mappers and hosts"');
     const [name, dot, letters, tagline] = paths(svg).map(([fill, points]) => ({
       fill,
       ...extent(points),
@@ -308,7 +308,7 @@ describe("bannerSvg", () => {
 
   it("is labelled with the full name and the tagline, escaped", () => {
     expect(bannerSvg(PRODUCTS.haruhime)).toContain(
-      'role="img" aria-label="haruhime.moe: osu! tools for tournament hosts"',
+      'role="img" aria-label="haruhime.moe: osu! tools for players, mappers and hosts"',
     );
     const svg = bannerSvg({ ...PRODUCTS.pools, tagline: `pools & "sheets" <3 'em` });
     expect(svg).toContain('aria-label="pools: pools &#38; &#34;sheets&#34; &#60;3 &#39;em"');

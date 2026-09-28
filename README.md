@@ -2,13 +2,14 @@
 
 # @haruhimemoe/brand
 
-The brand kit for haruhime.moe and its osu! tools (packs, pools, sheets), generated from one table:
+The brand kit for haruhime.moe and its osu! tools (packs, pools, bb, sheets), generated from one table:
 
 | Product | Mark | Hue |
 | --- | --- | --- |
 | haruhime (the parent site, haruhime.moe) | `h.` | 333 (pink) |
 | packs | `pk.` | 333 (pink) |
 | pools | `pl.` | 200 (blue) |
+| bb | `bb.` | 265 (violet) |
 | sheets | `sh.` | 150 (green) |
 
 - **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). The palette alone is also a browser-safe entry, `@haruhimemoe/brand/palette`. This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which haruhime.moe, packs.haruhime.moe and pools.haruhime.moe import: there, an app sets `--hue` and the CSS does the rest.
@@ -41,7 +42,7 @@ With npm, run it as `npx haruhime-brand`.
 
 | Command | What it does |
 | --- | --- |
-| `haruhime-brand <product>` | Writes the product's brand files into a Next.js app. `<product>` is `haruhime`, `packs`, `pools` or `sheets`. |
+| `haruhime-brand <product>` | Writes the product's brand files into a Next.js app. `<product>` is `haruhime`, `packs`, `pools`, `bb` or `sheets`. |
 | `haruhime-brand list` | Prints one line per product: its key, mark, hue and URL, separated by tabs. |
 | `haruhime-brand preview [--out <dir>]` | Writes `<dir>/index.html` (default `preview/index.html`, relative to where you run it): one page with every product's wordmarks, icons, link preview, banners and palette. |
 | `haruhime-brand help` (or `--help`, `-h`) | Prints the usage. |
@@ -53,6 +54,7 @@ With npm, run it as `npx haruhime-brand`.
 haruhime	h.	hue 333	https://haruhime.moe
 packs	pk.	hue 333	https://packs.haruhime.moe
 pools	pl.	hue 200	https://pools.haruhime.moe
+bb	bb.	hue 265	https://bb.haruhime.moe
 sheets	sh.	hue 150	https://sheets.haruhime.moe
 ```
 
@@ -75,7 +77,7 @@ sheets	sh.	hue 150	https://sheets.haruhime.moe
 | `src/app/apple-icon.png` | 180×180, square corners (iOS rounds them) |
 | `src/app/opengraph-image.png` + `.alt.txt` | the 1200×630 link preview and its alt text |
 
-The alt text is the full name and the tagline, like `pools: osu! mappools for tournament hosts` or `haruhime.moe: osu! tools for tournament hosts`. The palette file looks like `{ "hue": 200, "colors": { "b1": "#5c6970", ... } }`, with every token from [`palette`](#palette).
+The alt text is the full name and the tagline, like `pools: osu! mappools for tournament hosts` or `haruhime.moe: osu! tools for players, mappers and hosts`. The palette file looks like `{ "hue": 200, "colors": { "b1": "#5c6970", ... } }`, with every token from [`palette`](#palette).
 
 For each file it prints `wrote <path>`, or `replaced <path>` when the file was already there, with absolute paths. Rerun it after upgrading this package and commit the changes.
 
@@ -105,7 +107,7 @@ Next.js serves `public/` from the site root, so once an app has deployed its bra
 <a href="https://www.haruhime.moe">
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="https://www.haruhime.moe/brand/haruhime-banner-on-light.svg">
-    <img alt="haruhime.moe: osu! tools for tournament hosts" src="https://www.haruhime.moe/brand/haruhime-banner.svg" width="100%">
+    <img alt="haruhime.moe: osu! tools for players, mappers and hosts" src="https://www.haruhime.moe/brand/haruhime-banner.svg" width="100%">
   </picture>
 </a>
 ```
@@ -176,7 +178,7 @@ for (const written of writeBrandFiles(files, root)) console.log(written);
 
 | Export | Signature | What it is |
 | --- | --- | --- |
-| `PRODUCTS` | `{ haruhime, packs, pools, sheets }`, each a `Product` | The table above, keyed by name. |
+| `PRODUCTS` | `{ haruhime, packs, pools, bb, sheets }`, each a `Product` | The table above, keyed by name. |
 | `isProductKey` | `(value: string) => value is ProductKey` | True when `value` names a product in `PRODUCTS`. |
 
 A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:

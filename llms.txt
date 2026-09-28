@@ -1,6 +1,6 @@
 # @haruhimemoe/brand
 
-> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is a build-time Node tool (Node 22.12 or later, ES modules with types): apps install it as a dev dependency and commit what it writes. The one runtime-safe part is `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`), which imports nothing and works in browsers and edge runtimes.
+> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, bb, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is a build-time Node tool (Node 22.12 or later, ES modules with types): apps install it as a dev dependency and commit what it writes. The one runtime-safe part is `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`), which imports nothing and works in browsers and edge runtimes.
 
 ## Docs
 
@@ -28,10 +28,11 @@
 ## Related
 
 - [haruhime.moe](https://www.haruhime.moe): the parent site, whose brand files this package writes
-- [haruhime.moe brand page](https://www.haruhime.moe/brand): the name, logos, colors and the packs/pools/sheets icons, as shown on the site
+- [haruhime.moe brand page](https://www.haruhime.moe/brand): the name, logos, colors and the packs/pools/bb/sheets icons, as shown on the site
 - [haruhime.moe llms.txt](https://www.haruhime.moe/llms.txt): the site's own llms.txt, with every tool
 - [packs.haruhime.moe](https://packs.haruhime.moe): osu! beatmap packs for tournament hosts, one of the products
 - [pools.haruhime.moe](https://pools.haruhime.moe): past osu! tournament mappools and their maps, one of the products. In beta.
+- [bb.haruhime.moe](https://bb.haruhime.moe): an osu! BBCode editor with templates, one of the products
 - [@haruhimemoe/ui](https://github.com/haruhimemoe/ui): the shared React components and theme for the haruhime.moe tools, built on the same palette tokens
 
 ## Optional

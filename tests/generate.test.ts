@@ -95,7 +95,7 @@ describe("brandFiles", () => {
     const alt = brandFiles(PRODUCTS.haruhime).find((file) =>
       file.path.endsWith("opengraph-image.alt.txt"),
     );
-    expect(alt?.contents).toBe("haruhime.moe: osu! tools for tournament hosts");
+    expect(alt?.contents).toBe("haruhime.moe: osu! tools for players, mappers and hosts");
   });
 
   it("is deterministic", () => {
