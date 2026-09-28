@@ -7,12 +7,12 @@
  *       half-size ".moe", whose own dot takes the highlight.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { type Palette, palette } from "./palette.js";
 import { fullName, type Product } from "./products.js";
-import { type Box, layoutText, num, type TextRun } from "./text.js";
+import { type Box, layoutText, num, type TextRun, union } from "./text.js";
 
 /** The dot's radius and its gap from the last letter, in em. */
 const DOT_RADIUS = 0.075;
@@ -46,12 +46,7 @@ const textWithDot = (
       `<path fill="${colors.text}" d="${run.d}"/>`,
       `<circle cx="${num(cx)}" cy="${num(cy)}" r="${num(r)}" fill="${colors.dot}"/>`,
     ].join("\n  "),
-    ink: {
-      x1: Math.min(run.ink.x1, cx - r),
-      y1: Math.min(run.ink.y1, cy - r),
-      x2: Math.max(run.ink.x2, cx + r),
-      y2: Math.max(run.ink.y2, cy + r),
-    },
+    ink: union(run.ink, { x1: cx - r, y1: cy - r, x2: cx + r, y2: cy + r }),
     bottom: run.line.bottom,
   };
 };
@@ -85,17 +80,13 @@ const stacked = (
       `<path fill="${colors.dot}" d="${first.d}"/>`,
       `<path fill="${colors.text}" d="${others.d}"/>`,
     ].join("\n  "),
-    ink: {
-      x1: Math.min(text.ink.x1, whole.ink.x1),
-      y1: Math.min(text.ink.y1, whole.ink.y1),
-      x2: Math.max(text.ink.x2, whole.ink.x2),
-      y2: Math.max(text.ink.y2, whole.ink.y2),
-    },
+    ink: union(text.ink, whole.ink),
     bottom: whole.line.bottom,
   };
 };
 
-// A product's wordmark at any size: stacked when it has a suffix, else the name and the dot.
+// A product's wordmark at any size: stacked when it has a suffix, else the name and the dot. An
+// empty suffix counts as none.
 const drawWordmark = (
   product: Product,
   size: number,
@@ -103,9 +94,9 @@ const drawWordmark = (
   baseline: number,
   colors: Colors,
 ): Drawn =>
-  product.suffix === undefined
-    ? textWithDot(product.name, size, x, baseline, colors)
-    : stacked(product.name, product.suffix, size, x, baseline, colors);
+  product.suffix
+    ? stacked(product.name, product.suffix, size, x, baseline, colors)
+    : textWithDot(product.name, size, x, baseline, colors);
 
 /**
  * @function escapeXml

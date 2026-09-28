@@ -3,10 +3,10 @@
  * @desc The drawings: wordmark colors per background and its crop, the parent brand's stacked
  *       wordmark (".moe" right-aligned under "haruhime"), icons the same letter size across
  *       products and inside their canvas, the link preview's size and label, and the README
- *       banner's size, colors, centering and self-containment.
+ *       banner's size, colors, centering and self-containment. An empty suffix draws like none.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { describe, expect, it } from "vitest";
@@ -71,6 +71,13 @@ describe("wordmarkSvg", () => {
     expect(Number(cy) + Number(r)).toBe(1000);
     const letters = inkPoints(svg.replace(/<circle[^>]+>/, "")).map(([px]) => px);
     expect(Number(cx) - Number(r)).toBeGreaterThan(Math.max(...letters));
+  });
+
+  it("draws an empty suffix like none: the name and the round dot", () => {
+    const product: Product = { ...PRODUCTS.pools, suffix: "" };
+    expect(wordmarkSvg(product)).toBe(wordmarkSvg(PRODUCTS.pools));
+    expect(bannerSvg(product)).toBe(bannerSvg(PRODUCTS.pools));
+    expect(wordmarkSvg(product)).not.toContain('d=""');
   });
 });
 

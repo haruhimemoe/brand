@@ -7,7 +7,7 @@
 - `src/products.ts`: `PRODUCTS` (the parent site haruhime, and the tools packs, pools and sheets), the `Product` type, `isProductKey`, and the internal `fullName` (name plus suffix, for labels).
 - `src/palette.ts`: `TOKENS`, `palette(hue)` and `hslToHex`.
 - `src/fonts.ts`: loads `fonts/nunito-400.ttf` and `fonts/nunito-800.ttf` once per weight, by a path relative to the module, so it works from `src/` and `dist/`.
-- `src/text.ts`: `layoutText` (glyphs to SVG path data with kerning, and the exact ink box) and the internal `num` (coordinate formatting).
+- `src/text.ts`: `layoutText` (glyphs to SVG path data with kerning, and the exact ink box), and the internal `num` (coordinate formatting) and `union` (two ink boxes combined).
 - `src/svg.ts`: `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg` and `escapeXml`. The layout constants (dot, suffix, icon, link preview and banner sizes) live here.
 - `src/png.ts`: `svgToPng`, which loads `@resvg/resvg-js` on first call.
 - `src/generate.ts`: `brandFiles` (the 11 files, in a fixed order), `metadataConflicts` and `writeBrandFiles`.

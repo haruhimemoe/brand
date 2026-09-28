@@ -198,7 +198,8 @@ describe("haruhime-brand", () => {
   it("writes a preview page with every product's banners", () => {
     expect(cli("preview", "--out", "look")).toBe(0);
     const html = readFileSync(path.join(cwd, "look/index.html"), "utf8");
-    for (const name of ["haruhime", "packs", "pools", "sheets"]) {
+    // Labeled like the drawings themselves: the parent brand as "haruhime.moe".
+    for (const name of ["haruhime.moe", "packs", "pools", "sheets"]) {
       expect(html).toContain(`<h2>${name} `);
       expect(html).toContain(`alt="${name} banner"`);
       expect(html).toContain(`alt="${name} banner on light"`);

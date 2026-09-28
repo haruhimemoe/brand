@@ -5,12 +5,12 @@
  *       committing files.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { palette } from "./palette.js";
 import { svgToPng } from "./png.js";
-import type { Product } from "./products.js";
+import { fullName, type Product } from "./products.js";
 import { bannerSvg, escapeXml, iconSvg, ogSvg, wordmarkSvg } from "./svg.js";
 
 const dataUri = (mime: string, bytes: Uint8Array | string): string =>
@@ -18,6 +18,8 @@ const dataUri = (mime: string, bytes: Uint8Array | string): string =>
 
 const section = (product: Product): string => {
   const colors = palette(product.hue);
+  // The name as its wordmark reads ("haruhime.moe"), like the drawings' own labels.
+  const label = fullName(product);
   const swatches = Object.entries(colors)
     .map(
       ([token, hex]) =>
@@ -27,17 +29,17 @@ const section = (product: Product): string => {
   const svg = (source: string, alt: string, className: string) =>
     `<img class="${className}" alt="${escapeXml(alt)}" src="${dataUri("image/svg+xml", source)}">`;
   return `<section>
-  <h2>${escapeXml(product.name)} <small>hue ${product.hue} · ${escapeXml(product.mark)}.</small></h2>
+  <h2>${escapeXml(label)} <small>hue ${product.hue} · ${escapeXml(product.mark)}.</small></h2>
   <div class="row">
-    <div class="tile dark" style="background:${colors.b6}">${svg(wordmarkSvg(product), `${product.name} wordmark`, "wordmark")}</div>
-    <div class="tile light">${svg(wordmarkSvg(product, { background: "light" }), `${product.name} wordmark on light`, "wordmark")}</div>
-    ${svg(iconSvg(product), `${product.name} icon`, "icon")}
-    <img class="icon" alt="${escapeXml(product.name)} apple icon" src="${dataUri("image/png", svgToPng(iconSvg(product, { shape: "square" }), 180))}">
+    <div class="tile dark" style="background:${colors.b6}">${svg(wordmarkSvg(product), `${label} wordmark`, "wordmark")}</div>
+    <div class="tile light">${svg(wordmarkSvg(product, { background: "light" }), `${label} wordmark on light`, "wordmark")}</div>
+    ${svg(iconSvg(product), `${label} icon`, "icon")}
+    <img class="icon" alt="${escapeXml(label)} apple icon" src="${dataUri("image/png", svgToPng(iconSvg(product, { shape: "square" }), 180))}">
   </div>
-  <img class="og" alt="${escapeXml(product.name)} link preview" src="${dataUri("image/png", svgToPng(ogSvg(product), 1200))}">
+  <img class="og" alt="${escapeXml(label)} link preview" src="${dataUri("image/png", svgToPng(ogSvg(product), 1200))}">
   <div class="banners">
-    ${svg(bannerSvg(product), `${product.name} banner`, "banner")}
-    ${svg(bannerSvg(product, { background: "light" }), `${product.name} banner on light`, "banner")}
+    ${svg(bannerSvg(product), `${label} banner`, "banner")}
+    ${svg(bannerSvg(product, { background: "light" }), `${label} banner on light`, "banner")}
   </div>
   <div class="swatches">${swatches}</div>
 </section>`;

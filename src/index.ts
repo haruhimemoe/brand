@@ -1,11 +1,11 @@
 /**
  * @file src/index.ts
- * @desc @haruhimemoe/brand: the haruhime.moe tools' palettes, wordmarks, icons and link previews,
- *       generated from one table of products. Use the `haruhime-brand` CLI to write an app's
+ * @desc @haruhimemoe/brand: the haruhime.moe tools' palettes, wordmarks, icons, link previews
+ *       and README banners, generated from one table of products. Use the `haruhime-brand` CLI to write an app's
  *       files, or these functions to draw them yourself.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 export {

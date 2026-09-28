@@ -5,7 +5,7 @@
  *       2.0 leaves glyphs upside down. Also measures the exact ink box, for centering.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { loadFont } from "./fonts.js";
@@ -49,6 +49,19 @@ export const num = (value: number): string => {
 };
 
 const emptyBox = (): Box => ({ x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity });
+
+/**
+ * @function union
+ * @param a {Box} one box
+ * @param b {Box} another
+ * @returns {Box} the smallest box holding both
+ */
+export const union = (a: Box, b: Box): Box => ({
+  x1: Math.min(a.x1, b.x1),
+  y1: Math.min(a.y1, b.y1),
+  x2: Math.max(a.x2, b.x2),
+  y2: Math.max(a.y2, b.y2),
+});
 
 const grow = (box: Box, x: number, y: number): void => {
   box.x1 = Math.min(box.x1, x);

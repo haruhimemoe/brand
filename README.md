@@ -184,7 +184,7 @@ A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:
 - `hue`: an integer 0 to 359, the palette's hue.
 - `tagline`: the line under the wordmark in the link preview and banner.
 - `url`: the product's site.
-- `suffix`: drawn half size on a second line under the name (haruhime's `.moe`), its first character in the highlight color. Without one, the wordmark is the name and a round dot. Labels and alt text use the name plus the suffix (`haruhime.moe`).
+- `suffix`: drawn half size on a second line under the name (haruhime's `.moe`), its first character in the highlight color. Without one (an empty string counts as none), the wordmark is the name and a round dot. Labels and alt text use the name plus the suffix (`haruhime.moe`).
 
 ### Palette
 

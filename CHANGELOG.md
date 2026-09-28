@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `haruhime-brand <product>` and `metadataConflicts` treat a `favicon.ico` in the app directory (create-next-app ships one with the Next.js logo) as a conflict. Before, Next.js went on serving it next to the generated `icon.svg`.
 - `haruhime-brand constructor` (or `toString`, or any other name `Object` has) exits 1 with "Unknown product" instead of crashing with a `TypeError`.
 - `hslToHex` resolves colors the way browsers do for any input: a hue outside 0 to 360 is read as the same angle (`-75` gave `#ff00ff`; it's now `#bf00ff`, like `285`), saturation and lightness are clamped to 0 to 100 (`hslToHex(0, 0, 150)` gave `#17f17f17f`), and a non-finite argument throws a `RangeError` instead of returning `#NaNNaNNaN`. Palettes are unchanged.
+- A `Product` with an empty `suffix` (`""`) draws like one without: the name and a round dot. Before, it took the stacked layout, lost the dot and wrote empty paths.
+- The preview page labels the parent brand "haruhime.moe", like the drawings' own labels and alt text.
 - `--public` or `--app` pointing at a folder whose name starts with two dots (`..cache`) is no longer refused as outside `--root`.
 
 ### Security

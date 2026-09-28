@@ -4,7 +4,7 @@
  *       a tagline. Adding one here is all it takes to generate its brand files.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 export type Product = {
@@ -14,14 +14,15 @@ export type Product = {
   mark: string;
   /**
    * Printable ASCII drawn half size on a second line under the name, right-aligned to it, its
-   * first character in the highlight color (".moe" for the parent site). Without one, the
-   * wordmark is the name and a round dot.
+   * first character in the highlight color (".moe" for the parent site). Without one (or with
+   * ""), the wordmark is the name and a round dot.
    */
   suffix?: string;
   /** 0 to 359; the palette's hue. */
   hue: number;
-  /** One line under the wordmark in link previews. */
+  /** One line under the wordmark in link previews and README banners. */
   tagline: string;
+  /** The product's site (shown by `list`). */
   url: string;
 };
 
