@@ -1,9 +1,10 @@
 /**
  * @file tests/palette.test.ts
- * @desc The palette recipe: packs.haruhime.moe's shipped colors at hue 333, and hex rounding.
+ * @desc The palette recipe: packs.haruhime.moe's shipped colors at hue 333, and hslToHex the
+ *       way browsers resolve hsl(): rounding, any hue angle, clamped saturation and lightness.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Mon Sep 28, 2026
  */
 
 import { describe, expect, it } from "vitest";
@@ -31,6 +32,36 @@ describe("palette", () => {
     expect(hslToHex(0, 100, 50)).toBe("#ff0000");
     expect(hslToHex(120, 100, 25)).toBe("#008000");
     expect(hslToHex(240, 0, 100)).toBe("#ffffff");
+  });
+
+  it.each([
+    [-75, 285],
+    [480, 120],
+    [360, 0],
+    [-360, 0],
+  ])("reads hue %d as the same angle as %d", (hue, same) => {
+    expect(hslToHex(hue, 100, 50)).toBe(hslToHex(same, 100, 50));
+  });
+
+  it("gives #bf00ff for hue -75, like hsl(-75 100% 50%)", () => {
+    expect(hslToHex(-75, 100, 50)).toBe("#bf00ff");
+  });
+
+  it.each([
+    [0, 0, 150, "#ffffff"],
+    [0, 0, -10, "#000000"],
+    [0, 150, 50, "#ff0000"],
+    [0, -20, 50, "#808080"],
+  ])("clamps hsl(%d, %d, %d) like a browser: %s", (h, s, l, hex) => {
+    expect(hslToHex(h, s, l)).toBe(hex);
+  });
+
+  it.each([
+    [Number.NaN, 50, 50],
+    [0, Number.POSITIVE_INFINITY, 50],
+    [0, 50, Number.NaN],
+  ])("rejects hslToHex(%d, %d, %d)", (h, s, l) => {
+    expect(() => hslToHex(h, s, l)).toThrow(RangeError);
   });
 
   it.each([-1, 360, 1.5, Number.NaN])("rejects a hue outside 0 to 359 (%j)", (hue) => {

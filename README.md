@@ -192,7 +192,7 @@ A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:
 | --- | --- | --- |
 | `palette` | `(hue: number) => Palette` | Every token as `"#rrggbb"`: `b1` to `b6` backgrounds (light to dark), `c1` to `c4` text colors, `h1` and `h2` highlights. |
 | `TOKENS` | `{ readonly b1: readonly [10, 40]; readonly b2: readonly [10, 30]; … }` (a `const` object, a literal tuple per token) | The recipe: each token's saturation and lightness in percent. `b1` to `b6` are `[10, 40]`, `[10, 30]`, `[10, 25]`, `[10, 20]`, `[10, 15]` and `[10, 10]`; `c1` to `c4` are `[40, 100]` (white), `[40, 90]`, `[40, 80]` and `[40, 70]`; `h1` is `[100, 70]` and `h2` is `[50, 45]`. |
-| `hslToHex` | `(h: number, s: number, l: number) => string` | `"#rrggbb"` for a hue in degrees and a saturation and lightness 0 to 100, rounded the way browsers resolve `hsl()`. |
+| `hslToHex` | `(h: number, s: number, l: number) => string` | `"#rrggbb"` for a hue in degrees and a saturation and lightness 0 to 100, the way browsers resolve `hsl()`: any hue angle works (`-75` is `285`), saturation and lightness outside 0 to 100 are clamped, and each channel is rounded. |
 
 ### Drawings
 
@@ -236,6 +236,7 @@ A `TextRun` is `{ d, end, ink, line }`: `d` is the path data for every glyph, `e
 
 ## Errors
 
+- `hslToHex(h, s, l)` throws `RangeError` if any argument isn't a finite number.
 - `palette(hue)` throws `RangeError` if `hue` isn't an integer 0 to 359. Every drawing function, `brandFiles` and `previewHtml` call it, so a bad `product.hue` throws there too.
 - `brandFiles(product, ...)` throws `RangeError` if `product.name` doesn't match `/^[a-z][a-z0-9-]*$/`.
 - `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them). That covers a product's `name`, `mark`, `suffix` and `tagline`.
