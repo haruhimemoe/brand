@@ -35,7 +35,7 @@
 - A visual change (hue, size, spacing) is a minor version: apps rerun the CLI to pick it up. Check it with `bun run preview` and look at the page, then accept the snapshot diffs in `tests/__snapshots__/` with `bun run test -u`. Never accept a snapshot diff you haven't looked at.
 - **Docs match the code.** A change to an export, option, output file, default or error updates README.md in the same commit, and llms.txt if a README heading it links to changes. Anything a user would notice gets a line under `## [Unreleased]` in CHANGELOG.md. Never edit a released entry.
 - **Exact pins.** Every dependency version in `package.json` is exact.
-- Don't bump the version, tag or publish. Releases are cut by the maintainers.
+- Don't bump the version, tag or publish unless a maintainer asks. Releases are cut by the maintainers, and published only through `.github/workflows/release.yml` (a hand-published version has no provenance). A release commit moves `## [Unreleased]` to the new version with its date and compare link, and bumps `package.json`.
 - Code style: Biome (2 spaces, double quotes, 100 columns). Every source file starts with the `@file / @desc / @author / @created / @modified` header. Exported functions get JSDoc with `@function`, `@param`, `@returns`. Imports in `src/` use `.js` extensions.
 
 ## Before calling a change done
