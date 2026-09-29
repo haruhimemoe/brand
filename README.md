@@ -250,7 +250,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/p/[slug]
 }
 ```
 
-Three things make that work on Vercel (and any serverless Node host). Install the package as a dependency, not a dev dependency. Keep it and resvg out of the bundle so the native binary and the fonts load from `node_modules`: `serverExternalPackages: ["@haruhimemoe/brand", "@resvg/resvg-js"]`. And trace the fonts, which are read by a computed path: `outputFileTracingIncludes: { "/p/[slug]/og.png": ["./node_modules/@haruhimemoe/brand/fonts/*.ttf"] }`. A card takes about 60 to 80 ms to render; cache the response.
+Three things make that work on Vercel (and any serverless Node host). Install the package as a dependency, not a dev dependency. Keep it and resvg out of the bundle so the native binary and the fonts load from `node_modules`: `serverExternalPackages: ["@haruhimemoe/brand", "@resvg/resvg-js"]`. And trace the fonts, which are read by a computed path: `outputFileTracingIncludes: { "/p/*/og.png": ["./node_modules/@haruhimemoe/brand/fonts/*.ttf"] }` (the key is a picomatch glob over the route, so write a dynamic segment as `*`: `[slug]` would be a character class). A card takes about 60 to 80 ms to render; cache the response.
 
 ### App files
 
