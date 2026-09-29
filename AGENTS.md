@@ -9,6 +9,8 @@
 - `src/fonts.ts`: loads `fonts/nunito-400.ttf` and `fonts/nunito-800.ttf` once per weight, by a path relative to the module, so it works from `src/` and `dist/`.
 - `src/text.ts`: `layoutText` (glyphs to SVG path data with kerning, and the exact ink box), and the internal `num` (coordinate formatting) and `union` (two ink boxes combined).
 - `src/svg.ts`: `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg` and `escapeXml`. The layout constants (dot, suffix, icon, link preview and banner sizes) live here.
+- `src/fit.ts`: `asciiText` (user text folded to printable ASCII) and `fitLines` (word wrap and clamp by measured advance).
+- `src/card.ts`: `ogCardSvg`, `ogCard` and `OG_CARD`, the per-page link previews. They reuse `drawWordmark`, `svgDocument` and `wordmarkColors`, which `src/svg.ts` exports for it (not from `src/index.ts`).
 - `src/png.ts`: `svgToPng`, which loads `@resvg/resvg-js` on first call.
 - `src/generate.ts`: `brandFiles` (the 11 files, in a fixed order), `metadataConflicts` and `writeBrandFiles`.
 - `src/preview.ts`: `previewHtml`, the one-page preview.
@@ -16,7 +18,7 @@
 - `src/opentype.d.ts`: types for the slice of opentype.js 2.0 in use (it ships none).
 - `src/index.ts`: the public API. Export only what apps should use.
 - `fonts/`: Nunito 400 and 800, subset to printable ASCII, and `OFL.txt`.
-- `tests/<module>.test.ts`: Vitest. `tests/__snapshots__/` holds every product's SVGs (wordmark on both backgrounds, icon, link preview, both banners).
+- `tests/<module>.test.ts`: Vitest (`card.test.ts` covers `fit.ts` too, and checks each card's ink stays in its padding). `tests/__snapshots__/` holds every product's SVGs (wordmark on both backgrounds, icon, link preview, both banners).
 - `scripts/smoke.mjs`: imports the built `dist/` (and `@haruhimemoe/brand/palette` by name) and runs the bin into a temp folder (`bun run test:dist`).
 
 ## Rules
@@ -25,7 +27,7 @@
 - **Outlined text only.** Output SVGs contain paths, never `<text>`, so they render the same everywhere and PNG rendering needs no fonts. `svgToPng` keeps `loadSystemFonts: false`.
 - **Draw glyphs through `layoutText`.** opentype.js 2.0's `getPath` returns glyphs upside down; `layoutText` does the y flip itself, and `tests/text.test.ts` guards it.
 - **Deterministic output.** Same product, same bytes. Don't add dates, random ids or system fonts.
-- **Build-time only, except the palette.** Apps install this as a dev dependency and commit what it writes; nothing here should run per request, in a browser or on an edge runtime. The exception is `@haruhimemoe/brand/palette`: `src/palette.ts` must stay import-free and runtime-safe (no Node APIs), which `tests/palette.test.ts` and `scripts/smoke.mjs` check. Anything it needs goes in that file.
+- **Build-time, except cards and the palette.** Apps commit what the CLI writes. The one thing that may run per request is a page card (`ogCard`) in a Node.js server route, with the package external to the bundle and its fonts traced (README, Page cards); never in a browser or on an edge runtime. The exception is `@haruhimemoe/brand/palette`: `src/palette.ts` must stay import-free and runtime-safe (no Node APIs), which `tests/palette.test.ts` and `scripts/smoke.mjs` check. Anything it needs goes in that file.
 - **resvg stays lazy.** Only `svgToPng` loads `@resvg/resvg-js`, through `createRequire` on its first call. Never value-import it at the top of a module. A type-only `import type` (as in `src/png.ts`) is fine, since TypeScript erases it. `tests/png.test.ts` checks that importing the package doesn't load it.
 - **Public types stay self-contained.** `dist/*.d.ts` may only import relative paths (opentype.js ships no types); `scripts/smoke.mjs` walks them to check.
 - **Product names are file names.** `brandFiles` rejects a `name` outside `/^[a-z][a-z0-9-]*$/`, so a name can't escape a directory. Keep that check.

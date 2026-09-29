@@ -1,6 +1,6 @@
 # @haruhimemoe/brand
 
-> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, bb, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is a build-time Node tool (Node 22.12 or later, ES modules with types): apps install it as a dev dependency and commit what it writes. The one runtime-safe part is `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`), which imports nothing and works in browsers and edge runtimes.
+> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, bb, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is mostly a build-time Node tool (Node 22.12 or later, ES modules with types): apps commit what it writes. Per-page link previews (`ogCard`, `ogCardSvg`) can also render per request in a Node.js route. The one runtime-safe part is `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`), which imports nothing and works in browsers and edge runtimes.
 
 ## Docs
 
@@ -14,10 +14,11 @@
 - [API](https://github.com/haruhimemoe/brand#api): examples, then every export with its signature
 - [Palette](https://github.com/haruhimemoe/brand#palette): `palette`, `TOKENS` and `hslToHex`, also as the browser-safe `@haruhimemoe/brand/palette` entry
 - [Drawings](https://github.com/haruhimemoe/brand#drawings): `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`, `svgToPng` and `escapeXml`
+- [Page cards](https://github.com/haruhimemoe/brand#page-cards): `ogCard`, `ogCardSvg`, `OG_CARD`, `asciiText` and `fitLines`, and the Next.js config for serving a card from a route handler
 - [App files](https://github.com/haruhimemoe/brand#app-files): `brandFiles`, `metadataConflicts`, `writeBrandFiles` and `previewHtml`
 - [Text](https://github.com/haruhimemoe/brand#text): `layoutText`, its options and result
 - [Errors](https://github.com/haruhimemoe/brand#errors): what throws, and when the CLI exits 1
-- [Compatibility](https://github.com/haruhimemoe/brand#compatibility): Node floor, the native resvg binary's platforms, build-time only
+- [Compatibility](https://github.com/haruhimemoe/brand#compatibility): Node floor, the native resvg binary's platforms, what may run per request
 - [AGENTS.md](https://github.com/haruhimemoe/brand/blob/main/AGENTS.md): file layout, conventions and invariants for AI agents changing this repo
 
 ## Package

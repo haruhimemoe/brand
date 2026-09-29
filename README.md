@@ -220,6 +220,38 @@ Each drawing is a complete SVG document as a string, with `role="img"` and an `a
 | `svgToPng` | `(svg: string, width: number) => Uint8Array` | PNG bytes, `width` pixels wide, the height following the SVG's aspect ratio. It loads no system fonts, and loads `@resvg/resvg-js` on its first call. |
 | `escapeXml` | `(value: string) => string` | Escapes `&`, `<`, `>`, `"` and `'` as numeric character references, for SVG or HTML. |
 
+### Page cards
+
+Since 0.6.0. A link preview per page (a pack, a pool, a template, a guide) in the `ogSvg` look: 1200×630 on `b6`, the product's wordmark at the top left and, anchored to the bottom padding (80px), an optional eyebrow in `h1`, the title in `c1` and an optional subtitle in `c3`. The title takes 88px on up to 2 lines, else 76px or 64px on up to 3; past that the last line ends in "...". The subtitle takes up to 2 lines at 40px. Every line stays inside the padding.
+
+| Export | Signature | What it is |
+| --- | --- | --- |
+| `ogCardSvg` | `(product: Product, options: OgCardOptions) => string` | The card as SVG. `OgCardOptions` is `{ title, subtitle?, eyebrow? }`. The `aria-label` keeps the original text. |
+| `ogCard` | `(product: Product, options: OgCardOptions) => Uint8Array` | The same card as PNG bytes, through `svgToPng`. |
+| `OG_CARD` | `{ width: 1200, height: 630, padding: 80 }` | Its size, for `size` exports and `og:image:width`. |
+| `asciiText` | `(text: string) => string` | What the card draws of user text: accents dropped (`é` to `e`), curly quotes, dashes, `…`, `·`, `×` and `★` swapped for ASCII, anything else outside printable ASCII (CJK, emoji) left out, whitespace collapsed. A title with nothing left falls back to the product's tagline. |
+| `fitLines` | `(text: string, options: FitOptions) => { lines: string[]; clamped: boolean }` | Wraps ASCII text at spaces into at most `maxLines` lines of `maxWidth` (by advance) at a `weight` and `size`, breaking a word wider than a line, and ends the last line with "..." when it doesn't fit. |
+
+Serving one from a Next.js route handler at request time (Node.js runtime, not edge):
+
+```ts
+// src/app/p/[slug]/og.png/route.ts
+import { ogCard, PRODUCTS } from "@haruhimemoe/brand";
+
+export const runtime = "nodejs";
+
+export async function GET(_request: Request, { params }: RouteContext<"/p/[slug]/og.png">) {
+  const pack = await findPublicPack((await params).slug);
+  if (!pack) return new Response(null, { status: 404 });
+  const png = ogCard(PRODUCTS.packs, { eyebrow: "Mappool pack", title: pack.name, subtitle: "13 maps" });
+  return new Response(png, {
+    headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+  });
+}
+```
+
+Three things make that work on Vercel (and any serverless Node host). Install the package as a dependency, not a dev dependency. Keep it and resvg out of the bundle so the native binary and the fonts load from `node_modules`: `serverExternalPackages: ["@haruhimemoe/brand", "@resvg/resvg-js"]`. And trace the fonts, which are read by a computed path: `outputFileTracingIncludes: { "/p/[slug]/og.png": ["./node_modules/@haruhimemoe/brand/fonts/*.ttf"] }`. A card takes about 60 to 80 ms to render; cache the response.
+
 ### App files
 
 | Export | Signature | What it is |
@@ -245,14 +277,14 @@ A `TextRun` is `{ d, end, ink, line }`: `d` is the path data for every glyph, `e
 
 ### Types
 
-`Product`, `ProductKey`, `Palette`, `Token`, `WordmarkOptions`, `IconOptions`, `BannerOptions`, `BrandFile`, `BrandFileOptions`, `TextOptions`, `TextRun`, `Box` and `Weight` are exported as types.
+`Product`, `ProductKey`, `Palette`, `Token`, `OgCardOptions`, `FitOptions`, `WordmarkOptions`, `IconOptions`, `BannerOptions`, `BrandFile`, `BrandFileOptions`, `TextOptions`, `TextRun`, `Box` and `Weight` are exported as types.
 
 ## Errors
 
 - `hslToHex(h, s, l)` throws `RangeError` if any argument isn't a finite number.
 - `palette(hue)` throws `RangeError` if `hue` isn't an integer 0 to 359. Every drawing function, `brandFiles` and `previewHtml` call it, so a bad `product.hue` throws there too.
 - `brandFiles(product, ...)` throws `RangeError` if `product.name` doesn't match `/^[a-z][a-z0-9-]*$/`.
-- `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them). That covers a product's `name`, `mark`, `suffix` and `tagline`.
+- `layoutText` (and so `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`, but not `ogCardSvg`, which folds its text with `asciiText` first) throws `Error` if the text has a character outside printable ASCII, or any whitespace besides a plain space (the bundled fonts don't have glyphs for them). That covers a product's `name`, `mark`, `suffix` and `tagline`.
 - `svgToPng` (and so `brandFiles`, `previewHtml`, and the CLI's product and `preview` commands) fails if `@resvg/resvg-js` has no native binary for the platform. See [Compatibility](#compatibility).
 - The CLI exits 0 when it's done, and for `--help` or `--version` with any command (see [Options](#options)). It exits 1, with a message on stderr, for:
   - no command, or more than one (it prints the usage);
@@ -272,7 +304,7 @@ Node 22.12 or later. The package is ES modules with TypeScript types.
 
 The CLI writes Next.js App Router metadata files (`icon.svg`, `apple-icon.png`, `opengraph-image.png`), so it's for Next.js apps. The API works in any Node program.
 
-This is a build-time tool: run it in Node, at build or from a script. Never import `@haruhimemoe/brand` into a browser bundle or an edge runtime. The one exception is `@haruhimemoe/brand/palette`, which imports nothing and runs anywhere.
+The CLI and the brand files are build-time: run them in Node, at build or from a script. Page cards (`ogCard`) may also run per request in a Node.js server route (see [Page cards](#page-cards) for the Next.js config). Never import `@haruhimemoe/brand` into a browser bundle or an edge runtime. The one exception is `@haruhimemoe/brand/palette`, which imports nothing and runs anywhere.
 
 ## License
 

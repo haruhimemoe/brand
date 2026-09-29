@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-28
+
+### Added
+
+- Page cards: `ogCardSvg(product, { title, subtitle?, eyebrow? })` and `ogCard` (the same as PNG), a 1200×630 link preview per page in the `ogSvg` look, with the title wrapped and shrunk to fit (88, 76 or 64px, at most 3 lines, then "...") and every line inside an 80px padding. `OG_CARD` holds the size. `ogCard` can run per request in a Node.js route; the README shows the Next.js config.
+- `asciiText` folds user text to what the bundled fonts can draw (accents dropped, typographic punctuation straightened, the rest left out), and `fitLines` wraps and clamps text to a width.
+
 ## [0.5.0] - 2026-09-28
 
 ### Added
@@ -58,7 +65,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `wordmarkSvg`, `iconSvg` and `ogSvg`, outlined in Nunito so they need no fonts, and `svgToPng`, which loads the native renderer only when called.
 - The `haruhime-brand` CLI: writes an app's wordmarks, icons, link preview and palette into `public/` and the Next.js app directory, lists products, and writes a preview page. It refuses to write outside `--root` or next to existing icon or preview code unless `--force`.
 
-[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/haruhimemoe/brand/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/haruhimemoe/brand/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/haruhimemoe/brand/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/haruhimemoe/brand/compare/e4fcfcca308d858295fb6b51d19d339727950e0f...v0.3.0

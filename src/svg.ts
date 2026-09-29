@@ -25,9 +25,10 @@ const DOT_GAP = 0.09;
 const SUFFIX_SCALE = 0.5;
 const SUFFIX_GAP = 0.1;
 
-type Colors = { text: string; dot: string };
+/** A wordmark's text and dot colors. */
+export type Colors = { text: string; dot: string };
 /** SVG elements, their exact ink, and the bottom of the last line's line box (for layout). */
-type Drawn = { svg: string; ink: Box; bottom: number };
+export type Drawn = { svg: string; ink: Box; bottom: number };
 
 // Text plus the dot after it, in one color scheme.
 const textWithDot = (
@@ -85,9 +86,17 @@ const stacked = (
   };
 };
 
-// A product's wordmark at any size: stacked when it has a suffix, else the name and the dot. An
-// empty suffix counts as none.
-const drawWordmark = (
+/**
+ * @function drawWordmark
+ * @param product {Product} the brand
+ * @param size {number} font size
+ * @param x {number} pen x
+ * @param baseline {number} the name's baseline
+ * @param colors {Colors} text and dot colors
+ * @returns {Drawn} the wordmark at any size: stacked when it has a suffix (an empty one counts as
+ *          none), else the name and the dot. Internal: card.ts draws it too; not in src/index.ts.
+ */
+export const drawWordmark = (
   product: Product,
   size: number,
   x: number,
@@ -106,14 +115,26 @@ const drawWordmark = (
 export const escapeXml = (value: string): string =>
   value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
 
-const svgDocument = (attributes: string, label: string, body: string): string =>
+/**
+ * @function svgDocument
+ * @param attributes {string} the root's size attributes
+ * @param label {string} the accessible name (escaped here)
+ * @param body {string} the elements
+ * @returns {string} a labelled SVG document. Internal, shared with card.ts.
+ */
+export const svgDocument = (attributes: string, label: string, body: string): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" ${attributes} role="img" aria-label="${escapeXml(label)}">\n  ${body}\n</svg>\n`;
 
 type Background = "dark" | "light";
 
-// The wordmark's colors on a background. On white, h1 is too pale for the dot (sheets' green is
-// 1.3:1); the deeper h2 carries it.
-const wordmarkColors = (colors: Palette, background: Background = "dark"): Colors =>
+/**
+ * @function wordmarkColors
+ * @param colors {Palette} the product's palette
+ * @param background {Background} "dark" (default) or "light"
+ * @returns {Colors} the wordmark's text and dot colors. On white, h1 is too pale for the dot
+ *          (sheets' green is 1.3:1); the deeper h2 carries it. Internal, shared with card.ts.
+ */
+export const wordmarkColors = (colors: Palette, background: Background = "dark"): Colors =>
   background === "light"
     ? { text: colors.b6, dot: colors.h2 }
     : { text: colors.c1, dot: colors.h1 };
