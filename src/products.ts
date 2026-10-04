@@ -1,10 +1,11 @@
 /**
  * @file src/products.ts
- * @desc The haruhime.moe brands: the parent site and its tools, each a name, a monogram, a hue and
- *       a tagline. Adding one here is all it takes to generate its brand files.
+ * @desc The haruhime.moe brands: the parent site and its tools, each a name, a monogram, a hue, a
+ *       tagline, and the writing and dos/don'ts shown on its brand page. Adding one here is all
+ *       it takes to generate its brand files.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Mon Sep 28, 2026
+ * @modified Sun Oct 4, 2026
  */
 
 export type Product = {
@@ -24,7 +25,27 @@ export type Product = {
   tagline: string;
   /** The product's site (shown by `list`). */
   url: string;
+  /** How to write the name in running text, for the brand page. */
+  writing: string;
+  /** At least two things a brand page tells people to do with the files. */
+  dos: readonly string[];
+  /** At least two things a brand page tells people not to do with the logo. */
+  donts: readonly string[];
 };
+
+/** Shared across every product: a brand page always says to use the files as given. */
+const DOS: readonly string[] = [
+  "Use the files as they are, from this page.",
+  "Keep space around the icon about the width of its dot.",
+  "Use the on-light files on light backgrounds.",
+];
+
+/** Shared across every product: a brand page always warns against these. */
+const DONTS: readonly string[] = [
+  "Don't recolor, stretch, rotate or outline the logo.",
+  "Don't capitalize the name.",
+  "Don't use the logo to suggest an official osu! or ppy product.",
+];
 
 export const PRODUCTS = {
   haruhime: {
@@ -34,6 +55,9 @@ export const PRODUCTS = {
     hue: 333,
     tagline: "osu! tools for players, mappers and hosts",
     url: "https://haruhime.moe",
+    writing: "haruhime.moe, all lowercase, with the .moe. Just haruhime is fine in running text.",
+    dos: DOS,
+    donts: DONTS,
   },
   packs: {
     name: "packs",
@@ -41,6 +65,9 @@ export const PRODUCTS = {
     hue: 333,
     tagline: "osu! beatmap packs for tournament hosts",
     url: "https://packs.haruhime.moe",
+    writing: "packs, all lowercase. packs.haruhime.moe when you mean the site.",
+    dos: DOS,
+    donts: DONTS,
   },
   pools: {
     name: "pools",
@@ -48,6 +75,9 @@ export const PRODUCTS = {
     hue: 200,
     tagline: "osu! mappools for tournament hosts",
     url: "https://pools.haruhime.moe",
+    writing: "pools, all lowercase. pools.haruhime.moe when you mean the site.",
+    dos: DOS,
+    donts: DONTS,
   },
   bb: {
     name: "bb",
@@ -55,6 +85,9 @@ export const PRODUCTS = {
     hue: 265,
     tagline: "osu! BBCode editor and templates",
     url: "https://bb.haruhime.moe",
+    writing: "bb, all lowercase, never BB. bb.haruhime.moe when you mean the site.",
+    dos: DOS,
+    donts: DONTS,
   },
   sheets: {
     name: "sheets",
@@ -62,6 +95,9 @@ export const PRODUCTS = {
     hue: 150,
     tagline: "osu! tournament sheets",
     url: "https://sheets.haruhime.moe",
+    writing: "sheets, all lowercase. sheets.haruhime.moe when you mean the site.",
+    dos: DOS,
+    donts: DONTS,
   },
 } as const satisfies Record<string, Product>;
 

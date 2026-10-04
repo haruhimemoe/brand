@@ -1,10 +1,11 @@
 # AGENTS.md
 
-`@haruhimemoe/brand`: the haruhime.moe tools' brand files, generated. One table of products (`src/products.ts`) in, SVGs and PNGs out, through the `haruhime-brand` CLI or the functions exported from `src/index.ts`. A second entry, `@haruhimemoe/brand/palette`, is `src/palette.ts` alone, for browsers. `tsc` compiles `src/` to `dist/` one file at a time (no bundler).
+`@haruhimemoe/brand`: the haruhime.moe tools' brand files, generated. One table of products (`src/products.ts`) in, SVGs and PNGs out, through the `haruhime-brand` CLI or the functions exported from `src/index.ts`. Two more entries are browser-safe: `@haruhimemoe/brand/palette` is `src/palette.ts` alone, and `@haruhimemoe/brand/products` is `src/page.ts`, which re-exports `PRODUCTS` and its helpers alongside the brand-page data it builds. `tsc` compiles `src/` to `dist/` one file at a time (no bundler).
 
 ## Layout
 
-- `src/products.ts`: `PRODUCTS` (the parent site haruhime, and the tools packs, pools, bb and sheets), the `Product` type, `isProductKey`, and the internal `fullName` (name plus suffix, for labels).
+- `src/products.ts`: `PRODUCTS` (the parent site haruhime, and the tools packs, pools, bb and sheets), the `Product` type (name, mark, hue, tagline, url, and the brand-page `writing`, `dos` and `donts`), `isProductKey`, and `fullName` (name plus suffix, for labels).
+- `src/page.ts`: `BRAND_CONTACT`, `BrandPageData`, `BrandAsset` and `brandPageData(key)`, built from `PRODUCTS` and `palette`. Imports only `./products.js` and `./palette.js`, so it's the `@haruhimemoe/brand/products` entry (the exports map points at `dist/page.d.ts`/`dist/page.js` directly), which also re-exports `PRODUCTS`, `fullName`, `isProductKey` and their types.
 - `src/palette.ts`: `TOKENS`, `palette(hue)` and `hslToHex`. Also the `@haruhimemoe/brand/palette` entry (the exports map points at `dist/palette.js` directly), so it imports nothing.
 - `src/fonts.ts`: loads `fonts/nunito-400.ttf` and `fonts/nunito-800.ttf` once per weight, by a path relative to the module, so it works from `src/` and `dist/`.
 - `src/text.ts`: `layoutText` (glyphs to SVG path data with kerning, and the exact ink box), and the internal `num` (coordinate formatting) and `union` (two ink boxes combined).
@@ -19,7 +20,7 @@
 - `src/index.ts`: the public API. Export only what apps should use.
 - `fonts/`: Nunito 400 and 800, subset to printable ASCII, and `OFL.txt`.
 - `tests/<module>.test.ts`: Vitest (`card.test.ts` covers `fit.ts` too, and checks each card's ink stays in its padding). `tests/__snapshots__/` holds every product's SVGs (wordmark on both backgrounds, icon, link preview, both banners).
-- `scripts/smoke.mjs`: imports the built `dist/` (and `@haruhimemoe/brand/palette` by name) and runs the bin into a temp folder (`bun run test:dist`).
+- `scripts/smoke.mjs`: imports the built `dist/` (and `@haruhimemoe/brand/palette` and `@haruhimemoe/brand/products` by name) and runs the bin into a temp folder (`bun run test:dist`).
 
 ## Rules
 
@@ -27,7 +28,7 @@
 - **Outlined text only.** Output SVGs contain paths, never `<text>`, so they render the same everywhere and PNG rendering needs no fonts. `svgToPng` keeps `loadSystemFonts: false`.
 - **Draw glyphs through `layoutText`.** opentype.js 2.0's `getPath` returns glyphs upside down; `layoutText` does the y flip itself, and `tests/text.test.ts` guards it.
 - **Deterministic output.** Same product, same bytes. Don't add dates, random ids or system fonts.
-- **Build-time, except cards and the palette.** Apps commit what the CLI writes. The one thing that may run per request is a page card (`ogCard`) in a Node.js server route, with the package external to the bundle and its fonts traced (README, Page cards); never in a browser or on an edge runtime. The exception is `@haruhimemoe/brand/palette`: `src/palette.ts` must stay import-free and runtime-safe (no Node APIs), which `tests/palette.test.ts` and `scripts/smoke.mjs` check. Anything it needs goes in that file.
+- **Build-time, except cards, the palette and brand-page data.** Apps commit what the CLI writes. The one thing that may run per request is a page card (`ogCard`) in a Node.js server route, with the package external to the bundle and its fonts traced (README, Page cards); never in a browser or on an edge runtime. The exceptions are `@haruhimemoe/brand/palette` (`src/palette.ts`, import-free) and `@haruhimemoe/brand/products` (`src/page.ts`, which imports only `./products.js` and `./palette.js`): both must stay runtime-safe (no Node APIs, no fonts, no `opentype.js`), which `tests/palette.test.ts`, `tests/page.test.ts` and `scripts/smoke.mjs` check. Anything they need goes in those files.
 - **resvg stays lazy.** Only `svgToPng` loads `@resvg/resvg-js`, through `createRequire` on its first call. Never value-import it at the top of a module. A type-only `import type` (as in `src/png.ts`) is fine, since TypeScript erases it. `tests/png.test.ts` checks that importing the package doesn't load it.
 - **Public types stay self-contained.** `dist/*.d.ts` may only import relative paths (opentype.js ships no types); `scripts/smoke.mjs` walks them to check.
 - **Product names are file names.** `brandFiles` rejects a `name` outside `/^[a-z][a-z0-9-]*$/`, so a name can't escape a directory. Keep that check.

@@ -27,7 +27,7 @@ All text is outlined, so the SVGs need no fonts, and the PNGs come out the same 
 bun add -d @haruhimemoe/brand
 ```
 
-With npm: `npm install --save-dev @haruhimemoe/brand`. It needs Node 22.12 or later (see [Compatibility](#compatibility)). An app that uses [`@haruhimemoe/brand/palette`](#palette) at runtime (in a page, not a build script) installs it as a regular dependency instead.
+With npm: `npm install --save-dev @haruhimemoe/brand`. It needs Node 22.12 or later (see [Compatibility](#compatibility)). An app that uses [`@haruhimemoe/brand/palette`](#palette) or [`@haruhimemoe/brand/products`](#brand-page-data) at runtime (in a page, not a build script) installs it as a regular dependency instead.
 
 ## CLI
 
@@ -181,7 +181,7 @@ for (const written of writeBrandFiles(files, root)) console.log(written);
 | `PRODUCTS` | `{ haruhime, packs, pools, bb, sheets }`, each a `Product` | The table above, keyed by name. |
 | `isProductKey` | `(value: string) => value is ProductKey` | True when `value` names a product in `PRODUCTS`. |
 
-A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:
+A `Product` is `{ name, mark, hue, tagline, url, writing, dos, donts }`, plus an optional `suffix`:
 
 - `name`: lowercase, matching `/^[a-z][a-z0-9-]*$/`. It's drawn as the wordmark and used in file names.
 - `mark`: the one or two lowercase letters on the icon.
@@ -189,6 +189,9 @@ A `Product` is `{ name, mark, hue, tagline, url }`, plus an optional `suffix`:
 - `tagline`: the line under the wordmark in the link preview and banner.
 - `url`: the product's site.
 - `suffix`: drawn half size on a second line under the name (haruhime's `.moe`), its first character in the highlight color. Without one (an empty string counts as none), the wordmark is the name and a round dot. Labels and alt text use the name plus the suffix (`haruhime.moe`).
+- `writing`: how to write the name in running text, shown on the brand page (e.g. "pools, all lowercase. pools.haruhime.moe when you mean the site.").
+- `dos`: at least two things the brand page tells people to do with the files.
+- `donts`: at least two things the brand page tells people not to do with the logo.
 
 ### Palette
 
@@ -205,6 +208,26 @@ import { hslToHex, palette } from "@haruhimemoe/brand/palette";
 
 palette(200).h1; // "#66ccff"
 hslToHex(200, 100, 70); // "#66ccff"
+```
+
+### Brand page data
+
+Since 0.7.0. Everything a `/brand` page needs for one product, built from `PRODUCTS` and `palette`: its name, writing guidance, dos and don'ts, palette, the seven files under `public/brand/` (in the order a page shows them) and a link back to the family page.
+
+| Export | Signature | What it is |
+| --- | --- | --- |
+| `brandPageData` | `(key: ProductKey) => BrandPageData` | The product's name (suffix included, `fullName`), mark, tagline, url, `writing`, `dos`, `donts`, `palette(product.hue)`, its seven `public/brand/` files as `assets` (`{ label, href, dark }[]`), the shared `contact` and a `familyHref` (`"https://haruhime.moe/brand"` for every tool, `null` on haruhime's own page). |
+| `BRAND_CONTACT` | `"haruhime@haruhime.moe"` | The address every brand page shows for licensing or usage questions. |
+
+This is also its own entry, `@haruhimemoe/brand/products`: `src/page.ts` imports only `./products.js` and `./palette.js` (no fonts, no file system, no PNG renderer), so it's safe in a browser bundle or an edge runtime, and re-exports `PRODUCTS`, `fullName`, `isProductKey` and their types alongside `brandPageData` and `BRAND_CONTACT`:
+
+```ts
+import { brandPageData } from "@haruhimemoe/brand/products";
+
+const data = brandPageData("pools");
+data.name; // "pools"
+data.familyHref; // "https://haruhime.moe/brand"
+data.assets[0]; // { label: "Icon", href: "/brand/pools-icon.svg", dark: true }
 ```
 
 ### Drawings
@@ -277,7 +300,7 @@ A `TextRun` is `{ d, end, ink, line }`: `d` is the path data for every glyph, `e
 
 ### Types
 
-`Product`, `ProductKey`, `Palette`, `Token`, `OgCardOptions`, `FitOptions`, `WordmarkOptions`, `IconOptions`, `BannerOptions`, `BrandFile`, `BrandFileOptions`, `TextOptions`, `TextRun`, `Box` and `Weight` are exported as types.
+`Product`, `ProductKey`, `BrandPageData`, `BrandAsset`, `Palette`, `Token`, `OgCardOptions`, `FitOptions`, `WordmarkOptions`, `IconOptions`, `BannerOptions`, `BrandFile`, `BrandFileOptions`, `TextOptions`, `TextRun`, `Box` and `Weight` are exported as types.
 
 ## Errors
 
@@ -304,7 +327,7 @@ Node 22.12 or later. The package is ES modules with TypeScript types.
 
 The CLI writes Next.js App Router metadata files (`icon.svg`, `apple-icon.png`, `opengraph-image.png`), so it's for Next.js apps. The API works in any Node program.
 
-The CLI and the brand files are build-time: run them in Node, at build or from a script. Page cards (`ogCard`) may also run per request in a Node.js server route (see [Page cards](#page-cards) for the Next.js config). Never import `@haruhimemoe/brand` into a browser bundle or an edge runtime. The one exception is `@haruhimemoe/brand/palette`, which imports nothing and runs anywhere.
+The CLI and the brand files are build-time: run them in Node, at build or from a script. Page cards (`ogCard`) may also run per request in a Node.js server route (see [Page cards](#page-cards) for the Next.js config). Never import `@haruhimemoe/brand` into a browser bundle or an edge runtime. The exceptions are `@haruhimemoe/brand/palette` and `@haruhimemoe/brand/products` ([Brand page data](#brand-page-data)), which import nothing build-time and run anywhere.
 
 ## License
 

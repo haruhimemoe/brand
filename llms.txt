@@ -1,6 +1,6 @@
 # @haruhimemoe/brand
 
-> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, bb, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is mostly a build-time Node tool (Node 22.12 or later, ES modules with types): apps commit what it writes. Per-page link previews (`ogCard`, `ogCardSvg`) can also render per request in a Node.js route. The one runtime-safe part is `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`), which imports nothing and works in browsers and edge runtimes.
+> Brand kit generator for haruhime.moe and its osu! tools (packs, pools, bb, sheets). One product table in; out come a palette from one hue, Nunito wordmarks and monogram icons as outlined SVG, 1280×320 README banners, and the favicon, Apple icon and 1200×630 link preview a Next.js app serves as static files. The `haruhime-brand` CLI writes a product's 11 files into an app's `public/` and app directory; the same drawings are exported as functions. It is mostly a build-time Node tool (Node 22.12 or later, ES modules with types): apps commit what it writes. Per-page link previews (`ogCard`, `ogCardSvg`) can also render per request in a Node.js route. Two parts are runtime-safe: `@haruhimemoe/brand/palette` (`palette`, `TOKENS`, `hslToHex`) and `@haruhimemoe/brand/products` (`brandPageData`, `BRAND_CONTACT`, `PRODUCTS` and friends), neither of which imports anything build-time, so both work in browsers and edge runtimes.
 
 ## Docs
 
@@ -13,6 +13,7 @@
 - [Moving an app over](https://github.com/haruhimemoe/brand#moving-an-app-over): when the CLI stops on existing icon or link-preview files, and `--force`
 - [API](https://github.com/haruhimemoe/brand#api): examples, then every export with its signature
 - [Palette](https://github.com/haruhimemoe/brand#palette): `palette`, `TOKENS` and `hslToHex`, also as the browser-safe `@haruhimemoe/brand/palette` entry
+- [Brand page data](https://github.com/haruhimemoe/brand#brand-page-data): `brandPageData` and `BRAND_CONTACT`, also as the browser-safe `@haruhimemoe/brand/products` entry
 - [Drawings](https://github.com/haruhimemoe/brand#drawings): `wordmarkSvg`, `iconSvg`, `ogSvg`, `bannerSvg`, `svgToPng` and `escapeXml`
 - [Page cards](https://github.com/haruhimemoe/brand#page-cards): `ogCard`, `ogCardSvg`, `OG_CARD`, `asciiText` and `fitLines`, and the Next.js config for serving a card from a route handler
 - [App files](https://github.com/haruhimemoe/brand#app-files): `brandFiles`, `metadataConflicts`, `writeBrandFiles` and `previewHtml`

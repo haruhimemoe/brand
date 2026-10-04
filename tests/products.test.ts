@@ -2,10 +2,12 @@
  * @file tests/products.test.ts
  * @desc The product table: keys match names, marks are one or two letters and unique, hues are
  *       valid, and every string can be drawn with the bundled fonts. The parent brand, haruhime.moe,
- *       has a suffix and shares packs' pink; the tools each have their own hue.
+ *       has a suffix and shares packs' pink; the tools each have their own hue. Every product
+ *       also carries brand-page copy: how its name is written, and the dos and don'ts shown
+ *       alongside its assets.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Wed Sep 23, 2026
+ * @modified Sun Oct 4, 2026
  */
 
 import { describe, expect, it } from "vitest";
@@ -36,8 +38,29 @@ describe("PRODUCTS", () => {
       hue: 333,
       tagline: "osu! tools for players, mappers and hosts",
       url: "https://haruhime.moe",
+      writing: "haruhime.moe, all lowercase, with the .moe. Just haruhime is fine in running text.",
+      dos: [
+        "Use the files as they are, from this page.",
+        "Keep space around the icon about the width of its dot.",
+        "Use the on-light files on light backgrounds.",
+      ],
+      donts: [
+        "Don't recolor, stretch, rotate or outline the logo.",
+        "Don't capitalize the name.",
+        "Don't use the logo to suggest an official osu! or ppy product.",
+      ],
     });
   });
+
+  it.each(entries)(
+    "%s has brand-page writing guidance and at least two dos and don'ts",
+    (_key, product) => {
+      const { writing, dos, donts } = product as Product;
+      expect(writing.length).toBeGreaterThan(0);
+      expect(dos.length).toBeGreaterThanOrEqual(2);
+      expect(donts.length).toBeGreaterThanOrEqual(2);
+    },
+  );
 
   it("gives every product its own mark, and every tool its own hue", () => {
     const tools = entries.filter(([, product]) => (product as Product).suffix === undefined);

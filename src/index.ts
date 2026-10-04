@@ -5,7 +5,7 @@
  *       files, or these functions to draw them yourself.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Mon Sep 28, 2026
+ * @modified Sun Oct 4, 2026
  */
 
 export { OG_CARD, type OgCardOptions, ogCard, ogCardSvg } from "./card.js";
@@ -17,10 +17,11 @@ export {
   metadataConflicts,
   writeBrandFiles,
 } from "./generate.js";
+export { BRAND_CONTACT, type BrandAsset, type BrandPageData, brandPageData } from "./page.js";
 export { hslToHex, type Palette, palette, TOKENS, type Token } from "./palette.js";
 export { svgToPng } from "./png.js";
 export { previewHtml } from "./preview.js";
-export { isProductKey, PRODUCTS, type Product, type ProductKey } from "./products.js";
+export { fullName, isProductKey, PRODUCTS, type Product, type ProductKey } from "./products.js";
 export {
   type BannerOptions,
   bannerSvg,

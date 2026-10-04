@@ -1,11 +1,12 @@
 /**
  * @file scripts/smoke.mjs
  * @desc Runs the built package the way apps will: imports dist/ (fonts found from there), imports
- *       the browser-safe @haruhimemoe/brand/palette entry by name (through the exports map), and
- *       runs the haruhime-brand bin through node into a temp folder. Run by `bun run test:dist`.
+ *       the browser-safe @haruhimemoe/brand/palette and @haruhimemoe/brand/products entries by
+ *       name (through the exports map), and runs the haruhime-brand bin through node into a temp
+ *       folder. Run by `bun run test:dist`.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Mon Sep 28, 2026
+ * @modified Sun Oct 4, 2026
  */
 
 import assert from "node:assert/strict";
@@ -15,6 +16,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as paletteEntry from "@haruhimemoe/brand/palette";
+import * as productsEntry from "@haruhimemoe/brand/products";
 import { bannerSvg, brandFiles, PRODUCTS } from "../dist/index.js";
 
 // The palette entry resolves by name and is dist/palette.js, which imports nothing (so a browser
@@ -24,6 +26,17 @@ assert.equal(paletteEntry.palette(200).h1, "#66ccff");
 assert.equal(paletteEntry.hslToHex(-75, 100, 50), "#bf00ff");
 const paletteJs = readFileSync(new URL("../dist/palette.js", import.meta.url), "utf8");
 assert.doesNotMatch(paletteJs, /^\s*(import|export .* from)\b|\brequire\(/m, "palette.js imports");
+
+// The products entry resolves by name and is dist/page.js: browser-safe brand-page data, plus
+// the product table it's built from.
+assert.deepEqual(
+  Object.keys(productsEntry).sort(),
+  ["BRAND_CONTACT", "PRODUCTS", "brandPageData", "fullName", "isProductKey"].sort(),
+);
+const poolsPage = productsEntry.brandPageData("pools");
+assert.equal(poolsPage.name, "pools");
+assert.equal(poolsPage.familyHref, "https://haruhime.moe/brand");
+assert.equal(productsEntry.brandPageData("haruhime").familyHref, null);
 
 const files = brandFiles(PRODUCTS.pools);
 assert.equal(files.length, 11);
@@ -68,5 +81,6 @@ const walk = (file) => {
 };
 walk("index.d.ts");
 walk("palette.d.ts");
+walk("page.d.ts");
 
 console.log("smoke: ok");

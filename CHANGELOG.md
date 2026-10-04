@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-04
+
+### Added
+
+- `brandPageData(key)` and `BRAND_CONTACT`, plus the browser-safe `@haruhimemoe/brand/products` entry (`src/page.ts`, which also re-exports `PRODUCTS`, `fullName`, `isProductKey` and their types): everything a `/brand` page needs for one product, its name, writing guidance, dos and don'ts, palette, its seven `public/brand/` files in display order, the shared contact address and a link back to the family page.
+- `Product` gains `writing`, `dos` and `donts`: how to write the name in running text, and at least two dos and don'ts a brand page shows alongside the files, filled in for every product.
+
 ### Fixed
 
 - README, Page cards: the `outputFileTracingIncludes` key is a glob, so the example uses `/p/*/og.png`; `/p/[slug]/og.png` matched nothing and left the fonts out.
@@ -69,7 +76,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `wordmarkSvg`, `iconSvg` and `ogSvg`, outlined in Nunito so they need no fonts, and `svgToPng`, which loads the native renderer only when called.
 - The `haruhime-brand` CLI: writes an app's wordmarks, icons, link preview and palette into `public/` and the Next.js app directory, lists products, and writes a preview page. It refuses to write outside `--root` or next to existing icon or preview code unless `--force`.
 
-[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/haruhimemoe/brand/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/haruhimemoe/brand/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/haruhimemoe/brand/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/haruhimemoe/brand/compare/v0.3.0...v0.4.0

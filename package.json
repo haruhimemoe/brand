@@ -1,6 +1,6 @@
 {
   "name": "@haruhimemoe/brand",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Brand kit generator for the haruhime.moe osu! tools: palettes from one hue, Nunito wordmarks, monogram icons and README banners as outlined SVG, and the PNG icons and link previews Next.js serves as static files.",
   "keywords": [
     "osu",
@@ -34,6 +34,10 @@
     "./palette": {
       "types": "./dist/palette.d.ts",
       "default": "./dist/palette.js"
+    },
+    "./products": {
+      "types": "./dist/page.d.ts",
+      "default": "./dist/page.js"
     },
     "./package.json": "./package.json"
   },
