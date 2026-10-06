@@ -39,7 +39,7 @@ describe("haruhime-brand", () => {
     expect(cli("list")).toBe(0);
     expect(out).toEqual([
       "haruhime\th.\thue 333\thttps://haruhime.moe",
-      "packs\tpk.\thue 333\thttps://packs.haruhime.moe",
+      "packs\tpk.\thue 30\thttps://packs.haruhime.moe",
       "pools\tpl.\thue 200\thttps://pools.haruhime.moe",
       "bb\tbb.\thue 265\thttps://bb.haruhime.moe",
       "sheets\tsh.\thue 150\thttps://sheets.haruhime.moe",

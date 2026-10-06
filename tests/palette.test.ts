@@ -1,11 +1,11 @@
 /**
  * @file tests/palette.test.ts
- * @desc The palette recipe: packs.haruhime.moe's shipped colors at hue 333, and hslToHex the
+ * @desc The palette recipe: haruhime.moe's shipped colors at hue 333, and hslToHex the
  *       way browsers resolve hsl(): rounding, any hue angle, clamped saturation and lightness.
  *       And the @haruhimemoe/brand/palette entry: exactly these exports, and no imports.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Mon Sep 28, 2026
+ * @modified Tue Oct 6, 2026
  */
 
 import { readFileSync } from "node:fs";
@@ -14,7 +14,7 @@ import { hslToHex, palette, TOKENS } from "../src/index.js";
 import * as paletteEntry from "../src/palette.js";
 
 describe("palette", () => {
-  it("matches packs.haruhime.moe's brand colors at hue 333", () => {
+  it("matches haruhime.moe's brand colors at hue 333", () => {
     expect(palette(333)).toMatchObject({
       b6: "#1c1719",
       b4: "#382e32",

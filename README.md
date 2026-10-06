@@ -7,7 +7,7 @@ The brand kit for haruhime.moe and its osu! tools (packs, pools, bb, sheets), ge
 | Product | Mark | Hue |
 | --- | --- | --- |
 | haruhime (the parent site, haruhime.moe) | `h.` | 333 (pink) |
-| packs | `pk.` | 333 (pink) |
+| packs | `pk.` | 30 (orange) |
 | pools | `pl.` | 200 (blue) |
 | bb | `bb.` | 265 (violet) |
 | sheets | `sh.` | 150 (green) |
@@ -52,7 +52,7 @@ With npm, run it as `npx haruhime-brand`.
 
 ```text
 haruhime	h.	hue 333	https://haruhime.moe
-packs	pk.	hue 333	https://packs.haruhime.moe
+packs	pk.	hue 30	https://packs.haruhime.moe
 pools	pl.	hue 200	https://pools.haruhime.moe
 bb	bb.	hue 265	https://bb.haruhime.moe
 sheets	sh.	hue 150	https://sheets.haruhime.moe
@@ -335,4 +335,4 @@ MIT. Nunito (in `fonts/`) is under the SIL Open Font License 1.1; see [LICENSE](
 
 ---
 
-See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) to contribute. Report security issues as [SECURITY.md](SECURITY.md) describes. Bring questions and feedback to the haruhime.moe [Discord server](https://discord.gg/bKy9kjMV4y).
+See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) to contribute. Report security issues as [SECURITY.md](SECURITY.md) describes. Bring questions and feedback to the haruhime.moe [Discord server](https://haruhime.moe/discord).

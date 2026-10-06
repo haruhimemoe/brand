@@ -5,7 +5,7 @@
  *       it takes to generate its brand files.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Sun Oct 4, 2026
+ * @modified Tue Oct 6, 2026
  */
 
 export type Product = {
@@ -62,7 +62,7 @@ export const PRODUCTS = {
   packs: {
     name: "packs",
     mark: "pk",
-    hue: 333,
+    hue: 30,
     tagline: "osu! beatmap packs for tournament hosts",
     url: "https://packs.haruhime.moe",
     writing: "packs, all lowercase. packs.haruhime.moe when you mean the site.",

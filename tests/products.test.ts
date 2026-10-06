@@ -2,12 +2,12 @@
  * @file tests/products.test.ts
  * @desc The product table: keys match names, marks are one or two letters and unique, hues are
  *       valid, and every string can be drawn with the bundled fonts. The parent brand, haruhime.moe,
- *       has a suffix and shares packs' pink; the tools each have their own hue. Every product
+ *       has a suffix; every tool, packs included, has its own hue. Every product
  *       also carries brand-page copy: how its name is written, and the dos and don'ts shown
  *       alongside its assets.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Sun Oct 4, 2026
+ * @modified Tue Oct 6, 2026
  */
 
 import { describe, expect, it } from "vitest";
