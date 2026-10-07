@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-07
+
+### Added
+
+- harumin, the osu! Discord bot: mark `hm`, hue 350, at harumin.haruhime.moe.
+
 ## [0.8.0] - 2026-10-06
 
 ### Changed
@@ -82,7 +88,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `wordmarkSvg`, `iconSvg` and `ogSvg`, outlined in Nunito so they need no fonts, and `svgToPng`, which loads the native renderer only when called.
 - The `haruhime-brand` CLI: writes an app's wordmarks, icons, link preview and palette into `public/` and the Next.js app directory, lists products, and writes a preview page. It refuses to write outside `--root` or next to existing icon or preview code unless `--force`.
 
-[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.8.0...HEAD
+[unreleased]: https://github.com/haruhimemoe/brand/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/haruhimemoe/brand/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/haruhimemoe/brand/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/haruhimemoe/brand/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/haruhimemoe/brand/compare/v0.5.0...v0.6.0

@@ -2,7 +2,7 @@
 
 # @haruhimemoe/brand
 
-The brand kit for haruhime.moe and its osu! tools (packs, pools, bb, sheets), generated from one table:
+The brand kit for haruhime.moe and its osu! tools (packs, pools, bb, harumin, sheets), generated from one table:
 
 | Product | Mark | Hue |
 | --- | --- | --- |
@@ -10,6 +10,7 @@ The brand kit for haruhime.moe and its osu! tools (packs, pools, bb, sheets), ge
 | packs | `pk.` | 30 (orange) |
 | pools | `pl.` | 200 (blue) |
 | bb | `bb.` | 265 (violet) |
+| harumin | `hm.` | 350 (rose) |
 | sheets | `sh.` | 150 (green) |
 
 - **Palette from one hue:** six backgrounds, four text colors and two highlights, as hex values ([`palette`](#palette), `TOKENS` and each product's `<name>-palette.json`). The palette alone is also a browser-safe entry, `@haruhimemoe/brand/palette`. This package ships no CSS. The same HSL recipe is in [@haruhimemoe/ui](https://github.com/haruhimemoe/ui)'s `theme.css`, which haruhime.moe, packs.haruhime.moe and pools.haruhime.moe import: there, an app sets `--hue` and the CSS does the rest.
@@ -42,7 +43,7 @@ With npm, run it as `npx haruhime-brand`.
 
 | Command | What it does |
 | --- | --- |
-| `haruhime-brand <product>` | Writes the product's brand files into a Next.js app. `<product>` is `haruhime`, `packs`, `pools`, `bb` or `sheets`. |
+| `haruhime-brand <product>` | Writes the product's brand files into a Next.js app. `<product>` is `haruhime`, `packs`, `pools`, `bb`, `harumin` or `sheets`. |
 | `haruhime-brand list` | Prints one line per product: its key, mark, hue and URL, separated by tabs. |
 | `haruhime-brand preview [--out <dir>]` | Writes `<dir>/index.html` (default `preview/index.html`, relative to where you run it): one page with every product's wordmarks, icons, link preview, banners and palette. |
 | `haruhime-brand help` (or `--help`, `-h`) | Prints the usage. |
@@ -55,6 +56,7 @@ haruhime	h.	hue 333	https://haruhime.moe
 packs	pk.	hue 30	https://packs.haruhime.moe
 pools	pl.	hue 200	https://pools.haruhime.moe
 bb	bb.	hue 265	https://bb.haruhime.moe
+harumin	hm.	hue 350	https://harumin.haruhime.moe
 sheets	sh.	hue 150	https://sheets.haruhime.moe
 ```
 

@@ -5,7 +5,7 @@
  *       it takes to generate its brand files.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Tue Oct 6, 2026
+ * @modified Wed Oct 7, 2026
  */
 
 export type Product = {
@@ -86,6 +86,16 @@ export const PRODUCTS = {
     tagline: "osu! BBCode editor and templates",
     url: "https://bb.haruhime.moe",
     writing: "bb, all lowercase, never BB. bb.haruhime.moe when you mean the site.",
+    dos: DOS,
+    donts: DONTS,
+  },
+  harumin: {
+    name: "harumin",
+    mark: "hm",
+    hue: 350,
+    tagline: "the osu! Discord bot",
+    url: "https://harumin.haruhime.moe",
+    writing: "harumin, all lowercase. harumin.haruhime.moe when you mean the site.",
     dos: DOS,
     donts: DONTS,
   },
