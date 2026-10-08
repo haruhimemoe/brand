@@ -7,7 +7,7 @@
  *       alongside its assets.
  * @author David @dvhsh (https://dvh.sh)
  * @created Wed Sep 23, 2026
- * @modified Tue Oct 6, 2026
+ * @modified Wed Oct 7, 2026
  */
 
 import { describe, expect, it } from "vitest";
@@ -66,6 +66,10 @@ describe("PRODUCTS", () => {
     const tools = entries.filter(([, product]) => (product as Product).suffix === undefined);
     expect(new Set(entries.map(([, product]) => product.mark)).size).toBe(entries.length);
     expect(new Set(tools.map(([, product]) => product.hue)).size).toBe(tools.length);
+  });
+
+  it("has tourney at hue 110", () => {
+    expect(PRODUCTS.tourney.hue).toBe(110);
   });
 
   it("recognizes product keys only", () => {

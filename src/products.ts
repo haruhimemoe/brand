@@ -109,6 +109,16 @@ export const PRODUCTS = {
     dos: DOS,
     donts: DONTS,
   },
+  tourney: {
+    name: "tourney",
+    mark: "tr",
+    hue: 110,
+    tagline: "osu! tournaments, run in one place",
+    url: "https://tourney.haruhime.moe",
+    writing: "tourney, all lowercase. tourney.haruhime.moe when you mean the site.",
+    dos: DOS,
+    donts: DONTS,
+  },
 } as const satisfies Record<string, Product>;
 
 export type ProductKey = keyof typeof PRODUCTS;

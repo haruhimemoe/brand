@@ -44,6 +44,7 @@ describe("haruhime-brand", () => {
       "bb\tbb.\thue 265\thttps://bb.haruhime.moe",
       "harumin\thm.\thue 350\thttps://harumin.haruhime.moe",
       "sheets\tsh.\thue 150\thttps://sheets.haruhime.moe",
+      "tourney\ttr.\thue 110\thttps://tourney.haruhime.moe",
     ]);
   });
 
@@ -201,7 +202,7 @@ describe("haruhime-brand", () => {
     expect(cli("preview", "--out", "look")).toBe(0);
     const html = readFileSync(path.join(cwd, "look/index.html"), "utf8");
     // Labeled like the drawings themselves: the parent brand as "haruhime.moe".
-    for (const name of ["haruhime.moe", "packs", "pools", "bb", "harumin", "sheets"]) {
+    for (const name of ["haruhime.moe", "packs", "pools", "bb", "harumin", "sheets", "tourney"]) {
       expect(html).toContain(`<h2>${name} `);
       expect(html).toContain(`alt="${name} banner"`);
       expect(html).toContain(`alt="${name} banner on light"`);
@@ -226,7 +227,10 @@ describe("haruhime-brand", () => {
   it.each([
     [[], USAGE],
     [["pools", "extra"], USAGE],
-    [["nope"], 'Unknown product "nope". Products: haruhime, packs, pools, bb, harumin, sheets.'],
+    [
+      ["nope"],
+      'Unknown product "nope". Products: haruhime, packs, pools, bb, harumin, sheets, tourney.',
+    ],
     [["pools", "--bogus"], "Unknown option '--bogus'"],
     [["preview", "--root", "x"], "--root"],
     [["preview", "--force"], "--force"],
